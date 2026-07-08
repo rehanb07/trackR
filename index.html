@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rbuilds / quest board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --panel:#141416;
+    --panel-2:#1b1b1e;
+    --border:#2a2a2e;
+    --border-strong:#3a3a3f;
+    --text:#e8e6e1;
+    --text-mute:#8a8886;
+    --gold:#c9a961;
+    --gold-dim:#8a7643;
+    --green:#7fa88a;
+    --red:#b06a54;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);}
+  #qb{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Outfit',sans-serif;
+    min-height:100vh;
+    padding:32px 24px 64px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+  .header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--border);
+    padding-bottom:16px;margin-bottom:28px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:26px;height:26px;}
+  .brand .word{
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:2px;
+    color:var(--text-mute);text-transform:uppercase;
+  }
+  h1{
+    font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;
+    margin:2px 0 0;color:var(--text);
+  }
+  h2.section-title{
+    font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;
+    margin:0 0 14px;color:var(--text);
+  }
+  .date{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-mute);text-align:right;}
+  .addbar{
+    display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;
+  }
+  .addbar input[type=text]{flex:1;min-width:180px;}
+  input[type=text], select, input[type=number]{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    font-family:'Outfit',sans-serif;font-size:14px;padding:10px 12px;border-radius:2px;
+    outline:none;
+  }
+  input[type=text]:focus, select:focus, input[type=number]:focus{border-color:var(--gold-dim);}
+  select{color:var(--text-mute);}
+  input[type=color]{
+    width:38px;height:38px;padding:2px;background:var(--panel);border:1px solid var(--border);
+    border-radius:2px;cursor:pointer;
+  }
+  button{
+    background:transparent;border:1px solid var(--border-strong);color:var(--text);
+    font-family:'DM Mono',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;
+    padding:10px 16px;border-radius:2px;cursor:pointer;
+  }
+  button:hover{border-color:var(--gold);color:var(--gold);}
+  button.primary{border-color:var(--gold-dim);color:var(--gold);}
+  button.primary:hover{background:var(--gold);color:var(--bg);}
+  button.small{padding:4px 8px;font-size:10px;}
+  .board{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;
+  }
+  .col{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:14px;min-height:120px;}
+  .col-title{
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--text-mute);margin-bottom:12px;display:flex;justify-content:space-between;
+  }
+  .card{
+    background:var(--panel-2);border:1px solid var(--border);border-left:2px solid var(--tag-color,var(--gold-dim));
+    border-radius:2px;padding:10px 12px;margin-bottom:8px;
+  }
+  .card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
+  .card-title{font-size:14px;line-height:1.4;}
+  .card-title.done{color:var(--text-mute);text-decoration:line-through;}
+  .card-meta{
+    font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);
+    margin-top:6px;display:flex;justify-content:space-between;align-items:center;
+  }
+  .tag{font-size:10px;letter-spacing:0.5px;}
+  .card-actions{display:flex;gap:6px;margin-top:8px;}
+  .card-actions button{padding:4px 8px;font-size:10px;}
+  .empty{color:var(--text-mute);font-size:12px;font-style:italic;}
+
+  section.block{
+    border-top:1px solid var(--border);padding-top:22px;margin-bottom:32px;
+  }
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+  .stats{display:flex;gap:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);flex-wrap:wrap;}
+  .stats b{color:var(--gold);font-weight:500;}
+
+  .categories{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .chip{
+    display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);
+    border-left:3px solid var(--chip-color,var(--gold));border-radius:2px;padding:6px 10px;
+    font-family:'DM Mono',monospace;font-size:11px;
+  }
+  .chip button{border:none;background:none;padding:0 0 0 4px;font-size:12px;color:var(--text-mute);}
+  .chip button:hover{color:var(--red);}
+  .catform{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .timeline{position:relative;height:36px;background:var(--panel);border:1px solid var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+  .tick{position:absolute;top:0;bottom:0;width:6px;border-radius:1px;}
+  .hourmarks{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-mute);margin-bottom:20px;}
+  .logrow{
+    display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:12px;
+    padding:6px 0;border-bottom:1px solid var(--border);color:var(--text-mute);
+  }
+  .logrow .lname{color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;}
+  .logrow .ltime{color:var(--gold);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .widgetcard{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:16px;}
+  .widgetcard .wtitle{
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--text-mute);margin-bottom:12px;
+  }
+  .bignum{font-family:'DM Serif Display',serif;font-size:32px;color:var(--gold);line-height:1;}
+  .bignum .unit{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-mute);margin-left:6px;}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+  .quickbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .mealrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+  .mealrow label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);width:78px;}
+  .meallog{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);margin-top:10px;}
+  .meallog .entry{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);}
+  .meallog .entry .lvl{color:var(--gold);}
+
+  .weekrow{
+    display:grid;grid-template-columns:100px 1fr 70px 70px 70px 70px;gap:10px;align-items:center;
+    font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);
+    padding:8px 0;border-bottom:1px solid var(--border);
+  }
+  .weekrow.today{color:var(--text);}
+  .weekrow .wlabel{color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;}
+  .weekrow b{color:var(--gold);font-weight:500;}
+  .weekhead{
+    display:grid;grid-template-columns:100px 1fr 70px 70px 70px 70px;gap:10px;
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--text-mute);padding-bottom:6px;border-bottom:1px solid var(--border-strong);
+  }
+  @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:70px 1fr 50px 50px;font-size:10px;}}
+</style>
+</head>
+<body>
+<div id="qb">
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand">
+      <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M50 15 L20 55 L35 55 L15 85 L50 65 L85 85 L65 55 L80 55 Z" stroke="var(--gold)"/>
+      </svg>
+      <div>
+        <div class="word">rbuilds / quest board</div>
+        <h1>Today's quests</h1>
+      </div>
+    </div>
+    <div class="date"><span id="dateDisplay"></span> · <span id="timeDisplay"></span></div>
+  </div>
+
+  <section class="block" style="border-top:none;padding-top:0;">
+    <div class="section-head">
+      <h2 class="section-title">Categories</h2>
+    </div>
+    <div class="categories" id="categoryChips"></div>
+    <div class="catform">
+      <input type="text" id="newCatName" placeholder="New category name" style="width:180px;"/>
+      <input type="color" id="newCatColor" value="#c9a961"/>
+      <button onclick="addCategory()">Add category</button>
+    </div>
+  </section>
+
+  <section class="block" style="border-top:none;padding-top:0;">
+    <div class="addbar">
+      <input type="text" id="newTitle" placeholder="What needs doing?" />
+      <select id="newProject"></select>
+      <input type="number" id="newEst" placeholder="est. mins" style="width:100px;" />
+      <button class="primary" onclick="addQuest()">Add quest</button>
+    </div>
+
+    <div class="board">
+      <div class="col">
+        <div class="col-title">Queued <span id="cnt-queued">0</span></div>
+        <div id="col-queued"></div>
+      </div>
+      <div class="col">
+        <div class="col-title">Active <span id="cnt-active">0</span></div>
+        <div id="col-active"></div>
+      </div>
+      <div class="col">
+        <div class="col-title">Cleared <span id="cnt-cleared">0</span></div>
+        <div id="col-cleared"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="grid2">
+      <div class="widgetcard">
+        <div class="wtitle">Sleep last night</div>
+        <div class="bignum" id="sleepDisplay">0<span class="unit">hrs</span></div>
+        <div class="row">
+          <input type="number" id="sleepInput" placeholder="hours" step="0.25" style="width:90px;"/>
+          <button onclick="logSleep()">Log sleep</button>
+        </div>
+      </div>
+      <div class="widgetcard">
+        <div class="wtitle">Time spent rotting</div>
+        <div class="bignum" id="rotDisplay">0<span class="unit">min</span></div>
+        <div class="quickbtns">
+          <button class="small" onclick="addRot(15)">+15m</button>
+          <button class="small" onclick="addRot(30)">+30m</button>
+          <button class="small" onclick="addRot(60)">+1h</button>
+          <button class="small" onclick="resetRot()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="section-title">Meals</h2>
+    <div class="mealrow">
+      <label>Breakfast</label>
+      <select id="meal-breakfast"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
+    </div>
+    <div class="mealrow">
+      <label>Lunch</label>
+      <select id="meal-lunch"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
+    </div>
+    <div class="mealrow">
+      <label>Dinner</label>
+      <select id="meal-dinner"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
+    </div>
+    <div class="mealrow">
+      <label>Snack</label>
+      <select id="meal-snack"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
+    </div>
+    <button class="primary" onclick="logMeals()">Log today's meals</button>
+    <div class="meallog" id="mealLog"></div>
+  </section>
+
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title">This week</h2>
+      <button onclick="exportLog()">Export log (.txt)</button>
+    </div>
+    <div id="weekHistory"></div>
+  </section>
+
+  <section class="block">
+    <div class="section-head">
+      <h2 class="section-title">Where today went</h2>
+      <div class="stats">
+        <span><b id="statCleared">0</b> cleared</span>
+        <span><b id="statMins">0</b>m logged</span>
+        <span><b id="statSleep">0</b>h sleep</span>
+        <span><b id="statRot">0</b>m rotted</span>
+      </div>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="hourmarks"><span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span><span>12am</span></div>
+    <div id="logrows"></div>
+    <div style="margin-top:14px;">
+      <button onclick="clearToday()">Reset today's log</button>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<script>
+const DEFAULT_PROJECTS = [
+  {name:"OrbitArm", color:"#c9a961"},
+  {name:"UAV Swap", color:"#7fa88a"},
+  {name:"Toolbox", color:"#b06a54"},
+  {name:"Coursework", color:"#8a7fd4"},
+  {name:"General", color:"#8a8886"},
+  {name:"Rotting", color:"#5a5a5e"}
+];
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+let state = { projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {} };
+
+function load(){
+  try{
+    const raw = localStorage.getItem('quest-board-data');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state = Object.assign({ projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, lastSeen: null }, parsed);
+    }
+  }catch(e){console.error('load failed', e);}
+
+  const key = todayKey();
+  if(state.lastSeen && state.lastSeen !== key){
+    state.quests = state.quests.filter(q => q.status !== 'cleared');
+  }
+  state.lastSeen = key;
+  save();
+
+  render();
+  startClock();
+}
+
+function startClock(){
+  const tick = () => {
+    document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
+function save(){
+  try{
+    localStorage.setItem('quest-board-data', JSON.stringify(state));
+  }catch(e){console.error('save failed', e);}
+}
+
+function colorFor(project){
+  const p = state.projects.find(p=>p.name===project);
+  return p ? p.color : '#c9a961';
+}
+
+function populateProjectSelect(){
+  const sel = document.getElementById('newProject');
+  const current = sel.value;
+  sel.innerHTML = state.projects.filter(p=>p.name!=='Rotting').map(p=>`<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+  if(current) sel.value = current;
+}
+
+function renderCategoryChips(){
+  const el = document.getElementById('categoryChips');
+  el.innerHTML = state.projects.map(p => `
+    <div class="chip" style="--chip-color:${p.color}">
+      ${escapeHtml(p.name)}
+      <button onclick="removeCategory('${escapeHtml(p.name)}')" aria-label="Remove ${escapeHtml(p.name)}">×</button>
+    </div>
+  `).join('');
+}
+
+function addCategory(){
+  const nameEl = document.getElementById('newCatName');
+  const colorEl = document.getElementById('newCatColor');
+  const name = nameEl.value.trim();
+  if(!name) return;
+  if(state.projects.some(p=>p.name.toLowerCase()===name.toLowerCase())) { nameEl.value=''; return; }
+  state.projects.push({ name, color: colorEl.value });
+  nameEl.value = '';
+  save(); render();
+}
+
+function removeCategory(name){
+  state.projects = state.projects.filter(p=>p.name!==name);
+  save(); render();
+}
+
+function addQuest(){
+  const title = document.getElementById('newTitle').value.trim();
+  if(!title) return;
+  const project = document.getElementById('newProject').value;
+  const est = parseInt(document.getElementById('newEst').value) || null;
+  state.quests.push({
+    id: Date.now().toString(36),
+    title, project, est,
+    status: 'queued',
+    clearedAt: null
+  });
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newEst').value = '';
+  save(); render();
+}
+
+function advance(id){
+  const q = state.quests.find(q=>q.id===id);
+  if(!q) return;
+  if(q.status==='queued'){ q.status='active'; }
+  else if(q.status==='active'){
+    q.status='cleared';
+    const now = new Date();
+    q.clearedAt = now.toISOString();
+    const key = todayKey();
+    if(!state.logs[key]) state.logs[key] = [];
+    state.logs[key].push({ title:q.title, project:q.project, est:q.est, ts: now.toISOString() });
+  }
+  save(); render();
+}
+
+function removeQuest(id){
+  state.quests = state.quests.filter(q=>q.id!==id);
+  save(); render();
+}
+
+function clearToday(){
+  state.logs[todayKey()] = [];
+  save(); render();
+}
+
+function logSleep(){
+  const val = parseFloat(document.getElementById('sleepInput').value);
+  if(isNaN(val)) return;
+  state.sleep[todayKey()] = val;
+  document.getElementById('sleepInput').value = '';
+  save(); render();
+}
+
+function addRot(mins){
+  const key = todayKey();
+  state.rotting[key] = (state.rotting[key]||0) + mins;
+  const now = new Date();
+  if(!state.logs[key]) state.logs[key] = [];
+  state.logs[key].push({ title:`Rotted ${mins}m`, project:'Rotting', est:mins, ts: now.toISOString() });
+  save(); render();
+}
+
+function resetRot(){
+  state.rotting[todayKey()] = 0;
+  save(); render();
+}
+
+function logMeals(){
+  const key = todayKey();
+  const now = new Date().toISOString();
+  ['breakfast','lunch','dinner','snack'].forEach(m=>{
+    const val = document.getElementById('meal-'+m).value;
+    if(val){
+      if(!state.meals[key]) state.meals[key] = [];
+      state.meals[key].push({ meal: m.charAt(0).toUpperCase()+m.slice(1), level: val, ts: now });
+    }
+  });
+  save(); render();
+}
+
+function cardHTML(q){
+  const color = colorFor(q.project);
+  const nextLabel = q.status==='queued' ? 'Start' : q.status==='active' ? 'Clear' : null;
+  return `<div class="card" style="--tag-color:${color}">
+    <div class="card-top">
+      <div class="card-title ${q.status==='cleared'?'done':''}">${escapeHtml(q.title)}</div>
+    </div>
+    <div class="card-meta">
+      <span class="tag" style="color:${color}">${escapeHtml(q.project)}${q.est?' · '+q.est+'m':''}</span>
+      <span>${q.status==='cleared' && q.clearedAt ? new Date(q.clearedAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : ''}</span>
+    </div>
+    <div class="card-actions">
+      ${nextLabel ? `<button onclick="advance('${q.id}')">${nextLabel}</button>` : ''}
+      <button onclick="removeQuest('${q.id}')">Remove</button>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function lastNDays(n){
+  const days = [];
+  for(let i=n-1;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    days.push({ key, date: d });
+  }
+  return days;
+}
+
+function dayStats(key){
+  const log = state.logs[key] || [];
+  const cleared = log.filter(l=>l.project!=='Rotting').length;
+  const mins = log.reduce((s,l)=>s+(l.est||0),0);
+  const sleep = state.sleep[key] || 0;
+  const rot = state.rotting[key] || 0;
+  const meals = state.meals[key] || [];
+  return { cleared, mins, sleep, rot, meals, log };
+}
+
+function renderHistory(){
+  const el = document.getElementById('weekHistory');
+  const days = lastNDays(7);
+  const todayK = todayKey();
+  const head = `<div class="weekhead"><span>Day</span><span>Cleared</span><span>Mins</span><span>Sleep</span><span>Rot</span><span>Meals</span></div>`;
+  const rows = days.map(({key,date})=>{
+    const s = dayStats(key);
+    const label = key===todayK ? 'Today' : date.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+    return `<div class="weekrow ${key===todayK?'today':''}">
+      <span class="wlabel">${label}</span>
+      <span>${s.cleared} quest${s.cleared===1?'':'s'}</span>
+      <span><b>${s.mins}</b>m</span>
+      <span><b>${s.sleep}</b>h</span>
+      <span><b>${s.rot}</b>m</span>
+      <span>${s.meals.length}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = head + rows;
+}
+
+function exportLog(){
+  const days = lastNDays(7);
+  let out = "RBUILDS QUEST BOARD — WEEKLY LOG\n";
+  out += "Generated " + new Date().toLocaleString() + "\n";
+  out += "=".repeat(50) + "\n\n";
+  days.forEach(({key,date})=>{
+    const s = dayStats(key);
+    out += date.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'}) + "\n";
+    out += "-".repeat(30) + "\n";
+    out += `Quests cleared: ${s.cleared} (${s.mins} min logged)\n`;
+    out += `Sleep: ${s.sleep} hrs\n`;
+    out += `Rotting: ${s.rot} min\n`;
+    if(s.meals.length){
+      out += "Meals:\n";
+      s.meals.forEach(m => out += `  - ${m.meal}: ${m.level}\n`);
+    } else {
+      out += "Meals: none logged\n";
+    }
+    if(s.log.length){
+      out += "Timeline:\n";
+      [...s.log].sort((a,b)=>new Date(a.ts)-new Date(b.ts)).forEach(l=>{
+        out += `  ${new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}  [${l.project}] ${l.title}\n`;
+      });
+    }
+    out += "\n";
+  });
+
+  const blob = new Blob([out], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `quest-board-log-${todayKey()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function render(){
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
+
+  populateProjectSelect();
+  renderCategoryChips();
+  renderHistory();
+
+  const cols = {queued:[], active:[], cleared:[]};
+  state.quests.forEach(q => cols[q.status].push(q));
+
+  ['queued','active','cleared'].forEach(status=>{
+    const el = document.getElementById('col-'+status);
+    document.getElementById('cnt-'+status).textContent = cols[status].length;
+    el.innerHTML = cols[status].length ? cols[status].map(cardHTML).join('') : '<div class="empty">Nothing here.</div>';
+  });
+
+  const key = todayKey();
+  const log = state.logs[key] || [];
+  const sleepH = state.sleep[key] || 0;
+  const rotM = state.rotting[key] || 0;
+
+  document.getElementById('sleepDisplay').innerHTML = sleepH + '<span class="unit">hrs</span>';
+  document.getElementById('rotDisplay').innerHTML = rotM + '<span class="unit">min</span>';
+
+  const meals = state.meals[key] || [];
+  document.getElementById('mealLog').innerHTML = meals.length ? meals.map(m=>`
+    <div class="entry"><span>${escapeHtml(m.meal)}</span><span class="lvl">${escapeHtml(m.level)}</span></div>
+  `).join('') : '<div class="empty">No meals logged today.</div>';
+
+  document.getElementById('statCleared').textContent = log.filter(l=>l.project!=='Rotting').length;
+  document.getElementById('statMins').textContent = log.reduce((sum,l)=>sum+(l.est||0),0);
+  document.getElementById('statSleep').textContent = sleepH;
+  document.getElementById('statRot').textContent = rotM;
+
+  const timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
+  log.forEach(entry=>{
+    const d = new Date(entry.ts);
+    const mins = d.getHours()*60 + d.getMinutes();
+    const startMins = 6*60, endMins = 24*60;
+    const pct = Math.max(0, Math.min(100, ((mins-startMins)/(endMins-startMins))*100));
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.left = pct+'%';
+    tick.style.background = colorFor(entry.project);
+    tick.title = entry.title;
+    timeline.appendChild(tick);
+  });
+
+  const rows = document.getElementById('logrows');
+  if(log.length===0){
+    rows.innerHTML = '<div class="empty">Nothing logged yet today.</div>';
+  } else {
+    rows.innerHTML = [...log].reverse().map(l => `
+      <div class="logrow">
+        <span class="lname">${escapeHtml(l.title)} <span style="color:${colorFor(l.project)}">· ${escapeHtml(l.project)}</span></span>
+        <span class="ltime">${new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</span>
+      </div>
+    `).join('');
+  }
+}
+
+document.getElementById('newTitle').addEventListener('keydown', e => { if(e.key==='Enter') addQuest(); });
+document.getElementById('newCatName').addEventListener('keydown', e => { if(e.key==='Enter') addCategory(); });
+
+load();
+</script>
+</body>
+</html>
