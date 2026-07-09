@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>rbuilds / quest board</title>
+<title>rbuilds / trackR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +18,7 @@
     --gold-dim:#8a7643;
     --green:#7fa88a;
     --red:#b06a54;
-  }
+  } 
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);}
   #qb{
@@ -53,12 +53,12 @@
     display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;
   }
   .addbar input[type=text]{flex:1;min-width:180px;}
-  input[type=text], select, input[type=number]{
+  input[type=text], select, input[type=number], input[type=time]{
     background:var(--panel);border:1px solid var(--border);color:var(--text);
     font-family:'Outfit',sans-serif;font-size:14px;padding:10px 12px;border-radius:2px;
     outline:none;
   }
-  input[type=text]:focus, select:focus, input[type=number]:focus{border-color:var(--gold-dim);}
+  input[type=text]:focus, select:focus, input[type=number]:focus, input[type=time]:focus{border-color:var(--gold-dim);}
   select{color:var(--text-mute);}
   input[type=color]{
     width:38px;height:38px;padding:2px;background:var(--panel);border:1px solid var(--border);
@@ -141,19 +141,22 @@
   .meallog .entry .lvl{color:var(--gold);}
 
   .weekrow{
-    display:grid;grid-template-columns:100px 1fr 70px 70px 70px 70px;gap:10px;align-items:center;
+    display:grid;grid-template-columns:90px 1fr 55px 50px 50px 65px 45px 55px;gap:8px;align-items:center;
     font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);
-    padding:8px 0;border-bottom:1px solid var(--border);
+    padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;
   }
+  .weekrow:hover{color:var(--text);}
   .weekrow.today{color:var(--text);}
+  .weekrow.selected{background:var(--panel-2);border-left:2px solid var(--gold);padding-left:8px;}
   .weekrow .wlabel{color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;}
   .weekrow b{color:var(--gold);font-weight:500;}
   .weekhead{
-    display:grid;grid-template-columns:100px 1fr 70px 70px 70px 70px;gap:10px;
+    display:grid;grid-template-columns:90px 1fr 55px 50px 50px 65px 45px 55px;gap:8px;
     font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
     color:var(--text-mute);padding-bottom:6px;border-bottom:1px solid var(--border-strong);
   }
-  @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:70px 1fr 50px 50px;font-size:10px;}}
+  @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:60px 1fr 40px 40px;font-size:9px;}
+    .weekrow span:nth-child(5), .weekrow span:nth-child(7), .weekhead span:nth-child(5), .weekhead span:nth-child(7){display:none;}}
 </style>
 </head>
 <body>
@@ -166,7 +169,7 @@
         <path d="M50 15 L20 55 L35 55 L15 85 L50 65 L85 85 L65 55 L80 55 Z" stroke="var(--gold)"/>
       </svg>
       <div>
-        <div class="word">rbuilds / quest board</div>
+        <div class="word">rbuilds / trackR</div>
         <h1>Today's quests</h1>
       </div>
     </div>
@@ -214,8 +217,11 @@
       <div class="widgetcard">
         <div class="wtitle">Sleep last night</div>
         <div class="bignum" id="sleepDisplay">0<span class="unit">hrs</span></div>
+        <div id="sleepRangeText" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);margin-top:4px;"></div>
         <div class="row">
-          <input type="number" id="sleepInput" placeholder="hours" step="0.25" style="width:90px;"/>
+          <input type="time" id="bedInput" style="width:120px;"/>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);">→</span>
+          <input type="time" id="wakeInput" style="width:120px;"/>
           <button onclick="logSleep()">Log sleep</button>
         </div>
       </div>
@@ -259,12 +265,13 @@
       <h2 class="section-title">This week</h2>
       <button onclick="exportLog()">Export log (.txt)</button>
     </div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);margin-bottom:10px;">Click a day to see its breakdown below</div>
     <div id="weekHistory"></div>
   </section>
 
   <section class="block">
     <div class="section-head">
-      <h2 class="section-title">Where today went</h2>
+      <h2 class="section-title" id="dayGoneTitle">Where today went</h2>
       <div class="stats">
         <span><b id="statCleared">0</b> cleared</span>
         <span><b id="statMins">0</b>m logged</span>
@@ -276,7 +283,7 @@
     <div class="hourmarks"><span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span><span>12am</span></div>
     <div id="logrows"></div>
     <div style="margin-top:14px;">
-      <button onclick="clearToday()">Reset today's log</button>
+      <button onclick="clearSelectedDay()" id="resetDayBtn">Reset this day's log</button>
     </div>
   </section>
 
@@ -299,10 +306,14 @@ function todayKey(){
 }
 
 let state = { projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {} };
+let selectedDayKey = null;
 
 function load(){
   try{
-    const raw = localStorage.getItem('quest-board-data');
+    let raw = localStorage.getItem('trackr-data');
+    if(!raw){
+      raw = localStorage.getItem('quest-board-data'); // migrate from old name
+    }
     if(raw){
       const parsed = JSON.parse(raw);
       state = Object.assign({ projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, lastSeen: null }, parsed);
@@ -314,6 +325,7 @@ function load(){
     state.quests = state.quests.filter(q => q.status !== 'cleared');
   }
   state.lastSeen = key;
+  selectedDayKey = key;
   save();
 
   render();
@@ -330,7 +342,7 @@ function startClock(){
 
 function save(){
   try{
-    localStorage.setItem('quest-board-data', JSON.stringify(state));
+    localStorage.setItem('trackr-data', JSON.stringify(state));
   }catch(e){console.error('save failed', e);}
 }
 
@@ -408,16 +420,39 @@ function removeQuest(id){
   save(); render();
 }
 
-function clearToday(){
-  state.logs[todayKey()] = [];
+function clearSelectedDay(){
+  state.logs[selectedDayKey] = [];
   save(); render();
 }
 
+function computeSleepHours(bed, wake){
+  const [bh, bm] = bed.split(':').map(Number);
+  const [wh, wm] = wake.split(':').map(Number);
+  let bedMinutes = bh*60+bm;
+  let wakeMinutes = wh*60+wm;
+  if(wakeMinutes <= bedMinutes) wakeMinutes += 24*60;
+  return Math.round(((wakeMinutes-bedMinutes)/60)*100)/100;
+}
+
+function sleepHoursFor(key){
+  const s = state.sleep[key];
+  if(s == null) return 0;
+  return typeof s === 'number' ? s : (s.hours || 0);
+}
+
+function formatTime12(hhmm){
+  const [h,m] = hhmm.split(':').map(Number);
+  const period = h>=12 ? 'PM':'AM';
+  let hour12 = h%12; if(hour12===0) hour12=12;
+  return `${hour12}:${String(m).padStart(2,'0')} ${period}`;
+}
+
 function logSleep(){
-  const val = parseFloat(document.getElementById('sleepInput').value);
-  if(isNaN(val)) return;
-  state.sleep[todayKey()] = val;
-  document.getElementById('sleepInput').value = '';
+  const bed = document.getElementById('bedInput').value;
+  const wake = document.getElementById('wakeInput').value;
+  if(!bed || !wake) return;
+  const hours = computeSleepHours(bed, wake);
+  state.sleep[todayKey()] = { bed, wake, hours };
   save(); render();
 }
 
@@ -485,26 +520,39 @@ function dayStats(key){
   const log = state.logs[key] || [];
   const cleared = log.filter(l=>l.project!=='Rotting').length;
   const mins = log.reduce((s,l)=>s+(l.est||0),0);
-  const sleep = state.sleep[key] || 0;
+  const sleep = sleepHoursFor(key);
   const rot = state.rotting[key] || 0;
   const meals = state.meals[key] || [];
   return { cleared, mins, sleep, rot, meals, log };
+}
+
+function selectDay(key){
+  selectedDayKey = key;
+  render();
 }
 
 function renderHistory(){
   const el = document.getElementById('weekHistory');
   const days = lastNDays(7);
   const todayK = todayKey();
-  const head = `<div class="weekhead"><span>Day</span><span>Cleared</span><span>Mins</span><span>Sleep</span><span>Rot</span><span>Meals</span></div>`;
+  const allStats = days.map(({key})=>dayStats(key));
+  const avgSleep = Math.round((allStats.reduce((s,d)=>s+d.sleep,0)/7)*10)/10;
+  const avgRot = Math.round(allStats.reduce((s,d)=>s+d.rot,0)/7);
+  const head = `<div class="weekhead"><span>Day</span><span>Cleared</span><span>Mins</span><span>Sleep</span><span>Avg slp</span><span>Rot</span><span>Avg rot</span><span>Meals</span></div>`;
   const rows = days.map(({key,date})=>{
     const s = dayStats(key);
     const label = key===todayK ? 'Today' : date.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
-    return `<div class="weekrow ${key===todayK?'today':''}">
+    const classes = ['weekrow'];
+    if(key===todayK) classes.push('today');
+    if(key===selectedDayKey) classes.push('selected');
+    return `<div class="${classes.join(' ')}" onclick="selectDay('${key}')">
       <span class="wlabel">${label}</span>
       <span>${s.cleared} quest${s.cleared===1?'':'s'}</span>
       <span><b>${s.mins}</b>m</span>
       <span><b>${s.sleep}</b>h</span>
+      <span><b>${avgSleep}</b>h</span>
       <span><b>${s.rot}</b>m</span>
+      <span><b>${avgRot}</b>m</span>
       <span>${s.meals.length}</span>
     </div>`;
   }).join('');
@@ -513,7 +561,7 @@ function renderHistory(){
 
 function exportLog(){
   const days = lastNDays(7);
-  let out = "RBUILDS QUEST BOARD — WEEKLY LOG\n";
+  let out = "RBUILDS TRACKR — WEEKLY LOG\n";
   out += "Generated " + new Date().toLocaleString() + "\n";
   out += "=".repeat(50) + "\n\n";
   days.forEach(({key,date})=>{
@@ -542,7 +590,7 @@ function exportLog(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `quest-board-log-${todayKey()}.txt`;
+  a.download = `trackr-log-${todayKey()}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -565,27 +613,39 @@ function render(){
     el.innerHTML = cols[status].length ? cols[status].map(cardHTML).join('') : '<div class="empty">Nothing here.</div>';
   });
 
-  const key = todayKey();
-  const log = state.logs[key] || [];
-  const sleepH = state.sleep[key] || 0;
-  const rotM = state.rotting[key] || 0;
+  // Today's widgets (sleep / rot / meals) always reflect the actual current day
+  const todayK = todayKey();
+  const sleepEntry = state.sleep[todayK];
+  const sleepH = sleepHoursFor(todayK);
+  const rotM = state.rotting[todayK] || 0;
 
   document.getElementById('sleepDisplay').innerHTML = sleepH + '<span class="unit">hrs</span>';
+  document.getElementById('sleepRangeText').textContent = (sleepEntry && sleepEntry.bed && sleepEntry.wake) ? `${formatTime12(sleepEntry.bed)} → ${formatTime12(sleepEntry.wake)}` : '';
   document.getElementById('rotDisplay').innerHTML = rotM + '<span class="unit">min</span>';
 
-  const meals = state.meals[key] || [];
-  document.getElementById('mealLog').innerHTML = meals.length ? meals.map(m=>`
+  const todayMeals = state.meals[todayK] || [];
+  document.getElementById('mealLog').innerHTML = todayMeals.length ? todayMeals.map(m=>`
     <div class="entry"><span>${escapeHtml(m.meal)}</span><span class="lvl">${escapeHtml(m.level)}</span></div>
   `).join('') : '<div class="empty">No meals logged today.</div>';
 
-  document.getElementById('statCleared').textContent = log.filter(l=>l.project!=='Rotting').length;
-  document.getElementById('statMins').textContent = log.reduce((sum,l)=>sum+(l.est||0),0);
-  document.getElementById('statSleep').textContent = sleepH;
-  document.getElementById('statRot').textContent = rotM;
+  // "Where ___ went" section reflects whichever day is selected in the week view
+  if(!selectedDayKey) selectedDayKey = todayK;
+  const dayLabel = selectedDayKey === todayK ? "today" : new Date(selectedDayKey+'T00:00:00').toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
+  document.getElementById('dayGoneTitle').textContent = `Where ${dayLabel} went`;
+  document.getElementById('resetDayBtn').textContent = selectedDayKey === todayK ? "Reset today's log" : `Reset ${dayLabel}'s log`;
+
+  const s = dayStats(selectedDayKey);
+  const mealEntries = s.meals.map(m => ({ title: `${m.meal}: ${m.level}`, project: 'Meal', ts: m.ts, est: 0 }));
+  const combinedLog = [...s.log, ...mealEntries];
+
+  document.getElementById('statCleared').textContent = s.cleared;
+  document.getElementById('statMins').textContent = s.mins;
+  document.getElementById('statSleep').textContent = s.sleep;
+  document.getElementById('statRot').textContent = s.rot;
 
   const timeline = document.getElementById('timeline');
   timeline.innerHTML = '';
-  log.forEach(entry=>{
+  combinedLog.forEach(entry=>{
     const d = new Date(entry.ts);
     const mins = d.getHours()*60 + d.getMinutes();
     const startMins = 6*60, endMins = 24*60;
@@ -593,18 +653,18 @@ function render(){
     const tick = document.createElement('div');
     tick.className = 'tick';
     tick.style.left = pct+'%';
-    tick.style.background = colorFor(entry.project);
+    tick.style.background = entry.project === 'Meal' ? '#c98a4a' : colorFor(entry.project);
     tick.title = entry.title;
     timeline.appendChild(tick);
   });
 
   const rows = document.getElementById('logrows');
-  if(log.length===0){
-    rows.innerHTML = '<div class="empty">Nothing logged yet today.</div>';
+  if(combinedLog.length===0){
+    rows.innerHTML = '<div class="empty">Nothing logged for this day.</div>';
   } else {
-    rows.innerHTML = [...log].reverse().map(l => `
+    rows.innerHTML = [...combinedLog].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).map(l => `
       <div class="logrow">
-        <span class="lname">${escapeHtml(l.title)} <span style="color:${colorFor(l.project)}">· ${escapeHtml(l.project)}</span></span>
+        <span class="lname">${escapeHtml(l.title)} <span style="color:${l.project === 'Meal' ? '#c98a4a' : colorFor(l.project)}">· ${escapeHtml(l.project)}</span></span>
         <span class="ltime">${new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</span>
       </div>
     `).join('');
