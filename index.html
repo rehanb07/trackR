@@ -18,7 +18,7 @@
     --gold-dim:#8a7643;
     --green:#7fa88a;
     --red:#b06a54;
-  } 
+  }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);}
   #qb{
@@ -74,9 +74,12 @@
   button.primary:hover{background:var(--gold);color:var(--bg);}
   button.small{padding:4px 8px;font-size:10px;}
   .board{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:36px;
   }
-  .col{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:14px;min-height:120px;}
+  .col{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:14px;min-height:120px;transition:border-color 0.15s, background 0.15s;}
+  .col.dragover{border-color:var(--gold);background:var(--panel-2);}
+  .card{cursor:grab;}
+  .card:active{cursor:grabbing;}
   .col-title{
     font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
     color:var(--text-mute);margin-bottom:12px;display:flex;justify-content:space-between;
@@ -115,7 +118,8 @@
   .catform{display:flex;gap:8px;flex-wrap:wrap;}
 
   .timeline{position:relative;height:36px;background:var(--panel);border:1px solid var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
-  .tick{position:absolute;top:0;bottom:0;width:6px;border-radius:1px;}
+  .tick{position:absolute;top:0;bottom:0;min-width:5px;border-radius:1px;opacity:0.9;}
+  .tick:hover{opacity:1;}
   .hourmarks{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-mute);margin-bottom:20px;}
   .logrow{
     display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:12px;
@@ -134,29 +138,25 @@
   .bignum .unit{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-mute);margin-left:6px;}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
   .quickbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
-  .mealrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
-  .mealrow label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);width:78px;}
-  .meallog{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);margin-top:10px;}
-  .meallog .entry{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);}
-  .meallog .entry .lvl{color:var(--gold);}
 
   .weekrow{
-    display:grid;grid-template-columns:90px 1fr 55px 50px 50px 65px 45px 55px;gap:8px;align-items:center;
-    font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);
+    display:grid;grid-template-columns:80px 55px 45px 55px 45px 50px 45px 50px 45px;gap:6px;align-items:center;
+    font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);
     padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;
   }
   .weekrow:hover{color:var(--text);}
   .weekrow.today{color:var(--text);}
-  .weekrow.selected{background:var(--panel-2);border-left:2px solid var(--gold);padding-left:8px;}
+  .weekrow.selected{background:var(--panel-2);border-left:2px solid var(--gold);padding-left:6px;}
   .weekrow .wlabel{color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;}
   .weekrow b{color:var(--gold);font-weight:500;}
   .weekhead{
-    display:grid;grid-template-columns:90px 1fr 55px 50px 50px 65px 45px 55px;gap:8px;
-    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    display:grid;grid-template-columns:80px 55px 45px 55px 45px 50px 45px 50px 45px;gap:6px;
+    font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;
     color:var(--text-mute);padding-bottom:6px;border-bottom:1px solid var(--border-strong);
   }
-  @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:60px 1fr 40px 40px;font-size:9px;}
-    .weekrow span:nth-child(5), .weekrow span:nth-child(7), .weekhead span:nth-child(5), .weekhead span:nth-child(7){display:none;}}
+  @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:55px 1fr 1fr;font-size:9px;}
+    .weekrow span:nth-child(3), .weekrow span:nth-child(5), .weekrow span:nth-child(6), .weekrow span:nth-child(7), .weekrow span:nth-child(8), .weekrow span:nth-child(9),
+    .weekhead span:nth-child(3), .weekhead span:nth-child(5), .weekhead span:nth-child(6), .weekhead span:nth-child(7), .weekhead span:nth-child(8), .weekhead span:nth-child(9){display:none;}}
 </style>
 </head>
 <body>
@@ -192,22 +192,17 @@
     <div class="addbar">
       <input type="text" id="newTitle" placeholder="What needs doing?" />
       <select id="newProject"></select>
-      <input type="number" id="newEst" placeholder="est. mins" style="width:100px;" />
       <button class="primary" onclick="addQuest()">Add quest</button>
     </div>
 
     <div class="board">
-      <div class="col">
-        <div class="col-title">Queued <span id="cnt-queued">0</span></div>
-        <div id="col-queued"></div>
+      <div class="col" id="col-todo-wrap" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="onDrop(event,'todo')">
+        <div class="col-title">To do <span id="cnt-todo">0</span></div>
+        <div id="col-todo"></div>
       </div>
-      <div class="col">
-        <div class="col-title">Active <span id="cnt-active">0</span></div>
-        <div id="col-active"></div>
-      </div>
-      <div class="col">
-        <div class="col-title">Cleared <span id="cnt-cleared">0</span></div>
-        <div id="col-cleared"></div>
+      <div class="col" id="col-completed-wrap" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="onDrop(event,'completed')">
+        <div class="col-title">Completed <span id="cnt-completed">0</span></div>
+        <div id="col-completed"></div>
       </div>
     </div>
   </section>
@@ -228,36 +223,14 @@
       <div class="widgetcard">
         <div class="wtitle">Time spent rotting</div>
         <div class="bignum" id="rotDisplay">0<span class="unit">min</span></div>
-        <div class="quickbtns">
-          <button class="small" onclick="addRot(15)">+15m</button>
-          <button class="small" onclick="addRot(30)">+30m</button>
-          <button class="small" onclick="addRot(60)">+1h</button>
-          <button class="small" onclick="resetRot()">Reset</button>
+        <div class="row">
+          <input type="time" id="rotManualStart" style="width:120px;"/>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);">→</span>
+          <input type="time" id="rotManualEnd" style="width:120px;"/>
+          <button onclick="logRotManual()">Log rot</button>
         </div>
       </div>
     </div>
-  </section>
-
-  <section class="block">
-    <h2 class="section-title">Meals</h2>
-    <div class="mealrow">
-      <label>Breakfast</label>
-      <select id="meal-breakfast"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
-    </div>
-    <div class="mealrow">
-      <label>Lunch</label>
-      <select id="meal-lunch"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
-    </div>
-    <div class="mealrow">
-      <label>Dinner</label>
-      <select id="meal-dinner"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
-    </div>
-    <div class="mealrow">
-      <label>Snack</label>
-      <select id="meal-snack"><option value="">— skipped —</option><option>Low-cal</option><option>Med-cal</option><option>High-cal</option></select>
-    </div>
-    <button class="primary" onclick="logMeals()">Log today's meals</button>
-    <div class="meallog" id="mealLog"></div>
   </section>
 
   <section class="block">
@@ -273,14 +246,14 @@
     <div class="section-head">
       <h2 class="section-title" id="dayGoneTitle">Where today went</h2>
       <div class="stats">
-        <span><b id="statCleared">0</b> cleared</span>
+        <span><b id="statCleared">0</b> sessions logged</span>
         <span><b id="statMins">0</b>m logged</span>
         <span><b id="statSleep">0</b>h sleep</span>
         <span><b id="statRot">0</b>m rotted</span>
       </div>
     </div>
     <div class="timeline" id="timeline"></div>
-    <div class="hourmarks"><span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span><span>12am</span></div>
+    <div class="hourmarks"><span>5am</span><span>9am</span><span>1pm</span><span>5pm</span><span>9pm</span><span>1am</span><span>5am</span></div>
     <div id="logrows"></div>
     <div style="margin-top:14px;">
       <button onclick="clearSelectedDay()" id="resetDayBtn">Reset this day's log</button>
@@ -297,16 +270,60 @@ const DEFAULT_PROJECTS = [
   {name:"Toolbox", color:"#b06a54"},
   {name:"Coursework", color:"#8a7fd4"},
   {name:"General", color:"#8a8886"},
-  {name:"Rotting", color:"#5a5a5e"}
+  {name:"Rotting", color:"#5a5a5e"},
+  {name:"Sleep", color:"#6f8fae"}
 ];
 
-function todayKey(){
-  const d = new Date();
+function keyFromDate(d){
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
 
-let state = { projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {} };
+// The "day" rolls over at 5am, not midnight — so 2am counts as part of the previous day.
+function logicalNow(){
+  const d = new Date();
+  if(d.getHours() < 5) d.setDate(d.getDate()-1);
+  return d;
+}
+
+function todayKey(){
+  return keyFromDate(logicalNow());
+}
+
+function keyMinusDays(key, days){
+  const d = new Date(key+'T00:00:00');
+  d.setDate(d.getDate()-days);
+  return keyFromDate(d);
+}
+
+let state = { projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, archivedKeys: [] };
 let selectedDayKey = null;
+
+// Repairs the state object so every field is always the right type,
+// regardless of what shape old/corrupted saved data might be in.
+// This prevents crashes like "Cannot read properties of undefined (reading 'push')"
+// if localStorage has data from an earlier version of this app.
+function normalizeState(){
+  if(!Array.isArray(state.projects) || state.projects.length===0) state.projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+  if(!Array.isArray(state.quests)) state.quests = [];
+  if(typeof state.logs !== 'object' || state.logs===null) state.logs = {};
+  if(typeof state.sleep !== 'object' || state.sleep===null) state.sleep = {};
+  if(typeof state.rotting !== 'object' || state.rotting===null) state.rotting = {};
+  if(typeof state.meals !== 'object' || state.meals===null) state.meals = {};
+  if(!Array.isArray(state.archivedKeys)) state.archivedKeys = [];
+
+  // Make sure every logs/meals value is actually an array, not corrupted data
+  Object.keys(state.logs).forEach(k => { if(!Array.isArray(state.logs[k])) state.logs[k] = []; });
+  Object.keys(state.meals).forEach(k => { if(!Array.isArray(state.meals[k])) state.meals[k] = []; });
+
+  // Migrate old status names (queued/active/cleared) to the current todo/completed model
+  state.quests.forEach(q=>{
+    if(q.status==='queued' || q.status==='active') q.status='todo';
+    if(q.status==='cleared') q.status='completed';
+  });
+
+  if(!state.projects.some(p=>p && p.name==='Sleep')) state.projects.push({name:'Sleep', color:'#6f8fae'});
+  if(!state.projects.some(p=>p && p.name==='Rotting')) state.projects.push({name:'Rotting', color:'#5a5a5e'});
+}
 
 function load(){
   try{
@@ -316,13 +333,27 @@ function load(){
     }
     if(raw){
       const parsed = JSON.parse(raw);
-      state = Object.assign({ projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, lastSeen: null }, parsed);
+      state = Object.assign({ projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, lastSeen: null, archivedKeys: [] }, parsed);
     }
   }catch(e){console.error('load failed', e);}
 
+  normalizeState();
+
   const key = todayKey();
   if(state.lastSeen && state.lastSeen !== key){
-    state.quests = state.quests.filter(q => q.status !== 'cleared');
+    // Day rolled over (crosses the 5am boundary) — clear finished quests off the live board
+    state.quests = state.quests.filter(q => q.status !== 'completed');
+
+    // The day now falling outside the rolling 7-day window gets archived to a text file
+    // so nothing is lost once it scrolls off "This week".
+    const fallingOffKey = keyMinusDays(key, 7);
+    const hasData = (state.logs[fallingOffKey] && state.logs[fallingOffKey].length)
+      || state.sleep[fallingOffKey] || state.rotting[fallingOffKey]
+      || (state.meals[fallingOffKey] && state.meals[fallingOffKey].length);
+    if(hasData && !state.archivedKeys.includes(fallingOffKey)){
+      exportSingleDay(fallingOffKey);
+      state.archivedKeys.push(fallingOffKey);
+    }
   }
   state.lastSeen = key;
   selectedDayKey = key;
@@ -335,13 +366,33 @@ function load(){
 function startClock(){
   const tick = () => {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    checkRollover();
   };
   tick();
   setInterval(tick, 1000);
 }
 
+function checkRollover(){
+  const key = todayKey();
+  if(state.lastSeen && state.lastSeen !== key){
+    state.quests = state.quests.filter(q => q.status !== 'completed');
+    const fallingOffKey = keyMinusDays(key, 7);
+    const hasData = (state.logs[fallingOffKey] && state.logs[fallingOffKey].length)
+      || state.sleep[fallingOffKey] || state.rotting[fallingOffKey]
+      || (state.meals[fallingOffKey] && state.meals[fallingOffKey].length);
+    if(hasData && !state.archivedKeys.includes(fallingOffKey)){
+      exportSingleDay(fallingOffKey);
+      state.archivedKeys.push(fallingOffKey);
+    }
+    state.lastSeen = key;
+    if(selectedDayKey === state.lastSeen || selectedDayKey === keyMinusDays(key,1)) selectedDayKey = key;
+    save(); render();
+  }
+}
+
 function save(){
   try{
+    normalizeState();
     localStorage.setItem('trackr-data', JSON.stringify(state));
   }catch(e){console.error('save failed', e);}
 }
@@ -354,7 +405,7 @@ function colorFor(project){
 function populateProjectSelect(){
   const sel = document.getElementById('newProject');
   const current = sel.value;
-  sel.innerHTML = state.projects.filter(p=>p.name!=='Rotting').map(p=>`<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+  sel.innerHTML = state.projects.filter(p=>p.name!=='Rotting' && p.name!=='Sleep').map(p=>`<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
   if(current) sel.value = current;
 }
 
@@ -388,30 +439,60 @@ function addQuest(){
   const title = document.getElementById('newTitle').value.trim();
   if(!title) return;
   const project = document.getElementById('newProject').value;
-  const est = parseInt(document.getElementById('newEst').value) || null;
   state.quests.push({
     id: Date.now().toString(36),
-    title, project, est,
-    status: 'queued',
-    clearedAt: null
+    title, project,
+    status: 'todo',
+    totalMins: 0,
+    completedAt: null
   });
   document.getElementById('newTitle').value = '';
-  document.getElementById('newEst').value = '';
   save(); render();
 }
 
-function advance(id){
+// Logs the time typed on a quest's own start/end fields as a session —
+// just like sleep. This does NOT complete the quest; it stays in "To do"
+// so you can log more sessions later (work, break, work again, etc).
+// Dragging the card to "Completed" is what actually finishes it.
+function logQuestTime(id){
   const q = state.quests.find(q=>q.id===id);
   if(!q) return;
-  if(q.status==='queued'){ q.status='active'; }
-  else if(q.status==='active'){
-    q.status='cleared';
-    const now = new Date();
-    q.clearedAt = now.toISOString();
-    const key = todayKey();
-    if(!state.logs[key]) state.logs[key] = [];
-    state.logs[key].push({ title:q.title, project:q.project, est:q.est, ts: now.toISOString() });
-  }
+  const startVal = document.getElementById('qstart-'+id).value;
+  const endVal = document.getElementById('qend-'+id).value;
+  if(!startVal || !endVal) return;
+  const [sh,sm] = startVal.split(':').map(Number);
+  const [eh,em] = endVal.split(':').map(Number);
+  const startDate = new Date(); startDate.setHours(sh,sm,0,0);
+  const endDate = new Date(); endDate.setHours(eh,em,0,0);
+  if(endDate <= startDate) endDate.setDate(endDate.getDate()+1);
+  const mins = Math.round((endDate-startDate)/60000);
+
+  const key = todayKey();
+  if(!state.logs[key]) state.logs[key] = [];
+  state.logs[key].push({ title:q.title, project:q.project, actualMins:mins, start:startDate.toISOString(), end:endDate.toISOString(), ts: endDate.toISOString() });
+
+  q.totalMins = (q.totalMins||0) + mins;
+  save(); render();
+}
+
+// Drag and drop between To do / Completed
+let draggedQuestId = null;
+
+function onDragStart(e, id){
+  draggedQuestId = id;
+  e.dataTransfer.setData('text/plain', id);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onDrop(e, targetStatus){
+  e.preventDefault();
+  document.querySelectorAll('.col').forEach(c => c.classList.remove('dragover'));
+  const id = e.dataTransfer.getData('text/plain') || draggedQuestId;
+  const q = state.quests.find(q=>q.id===id);
+  if(!q) return;
+  q.status = targetStatus;
+  q.completedAt = targetStatus === 'completed' ? new Date().toISOString() : null;
+  draggedQuestId = null;
   save(); render();
 }
 
@@ -452,50 +533,74 @@ function logSleep(){
   const wake = document.getElementById('wakeInput').value;
   if(!bed || !wake) return;
   const hours = computeSleepHours(bed, wake);
-  state.sleep[todayKey()] = { bed, wake, hours };
-  save(); render();
-}
-
-function addRot(mins){
   const key = todayKey();
-  state.rotting[key] = (state.rotting[key]||0) + mins;
-  const now = new Date();
+  state.sleep[key] = { bed, wake, hours };
+
+  // Also log it as a timeline entry, just like a quest
   if(!state.logs[key]) state.logs[key] = [];
-  state.logs[key].push({ title:`Rotted ${mins}m`, project:'Rotting', est:mins, ts: now.toISOString() });
-  save(); render();
-}
-
-function resetRot(){
-  state.rotting[todayKey()] = 0;
-  save(); render();
-}
-
-function logMeals(){
-  const key = todayKey();
-  const now = new Date().toISOString();
-  ['breakfast','lunch','dinner','snack'].forEach(m=>{
-    const val = document.getElementById('meal-'+m).value;
-    if(val){
-      if(!state.meals[key]) state.meals[key] = [];
-      state.meals[key].push({ meal: m.charAt(0).toUpperCase()+m.slice(1), level: val, ts: now });
-    }
+  state.logs[key] = state.logs[key].filter(l => l.project !== 'Sleep');
+  const [bh,bm] = bed.split(':').map(Number);
+  const [wh,wm] = wake.split(':').map(Number);
+  const bedDate = new Date(); bedDate.setHours(bh,bm,0,0);
+  const wakeDate = new Date(); wakeDate.setHours(wh,wm,0,0);
+  state.logs[key].push({
+    title: `Slept ${hours}h`, project:'Sleep', actualMins: Math.round(hours*60),
+    start: bedDate.toISOString(), end: wakeDate.toISOString(), ts: wakeDate.toISOString()
   });
+
+  save(); render();
+}
+
+// Log a rotting session by typing its start/end time directly.
+function logRotManual(){
+  const startVal = document.getElementById('rotManualStart').value;
+  const endVal = document.getElementById('rotManualEnd').value;
+  if(!startVal || !endVal) return;
+  const key = todayKey();
+  const [sh,sm] = startVal.split(':').map(Number);
+  const [eh,em] = endVal.split(':').map(Number);
+  const startDate = new Date(); startDate.setHours(sh,sm,0,0);
+  const endDate = new Date(); endDate.setHours(eh,em,0,0);
+  if(endDate <= startDate) endDate.setDate(endDate.getDate()+1);
+  const mins = Math.round((endDate-startDate)/60000);
+  state.rotting[key] = (state.rotting[key]||0) + mins;
+  if(!state.logs[key]) state.logs[key] = [];
+  state.logs[key].push({ title:`Rotted ${mins}m`, project:'Rotting', actualMins:mins, start:startDate.toISOString(), end:endDate.toISOString(), ts: endDate.toISOString() });
+  document.getElementById('rotManualStart').value = '';
+  document.getElementById('rotManualEnd').value = '';
   save(); render();
 }
 
 function cardHTML(q){
   const color = colorFor(q.project);
-  const nextLabel = q.status==='queued' ? 'Start' : q.status==='active' ? 'Clear' : null;
-  return `<div class="card" style="--tag-color:${color}">
+  if(q.status === 'todo'){
+    return `<div class="card" style="--tag-color:${color}" draggable="true" ondragstart="onDragStart(event,'${q.id}')">
+      <div class="card-top">
+        <div class="card-title">${escapeHtml(q.title)}</div>
+      </div>
+      <div class="card-meta">
+        <span class="tag" style="color:${color}">${escapeHtml(q.project)}${q.totalMins ? ' · '+q.totalMins+'m logged' : ''}</span>
+      </div>
+      <div class="row" style="margin-top:8px;gap:6px;">
+        <input type="time" id="qstart-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;"/>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);">→</span>
+        <input type="time" id="qend-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;"/>
+      </div>
+      <div class="card-actions">
+        <button onclick="logQuestTime('${q.id}')">Log</button>
+        <button onclick="removeQuest('${q.id}')">Remove</button>
+      </div>
+    </div>`;
+  }
+  return `<div class="card" style="--tag-color:${color}" draggable="true" ondragstart="onDragStart(event,'${q.id}')">
     <div class="card-top">
-      <div class="card-title ${q.status==='cleared'?'done':''}">${escapeHtml(q.title)}</div>
+      <div class="card-title done">${escapeHtml(q.title)}</div>
     </div>
     <div class="card-meta">
-      <span class="tag" style="color:${color}">${escapeHtml(q.project)}${q.est?' · '+q.est+'m':''}</span>
-      <span>${q.status==='cleared' && q.clearedAt ? new Date(q.clearedAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : ''}</span>
+      <span class="tag" style="color:${color}">${escapeHtml(q.project)}${q.totalMins ? ' · '+q.totalMins+'m' : ''}</span>
+      <span>${q.completedAt ? new Date(q.completedAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : ''}</span>
     </div>
     <div class="card-actions">
-      ${nextLabel ? `<button onclick="advance('${q.id}')">${nextLabel}</button>` : ''}
       <button onclick="removeQuest('${q.id}')">Remove</button>
     </div>
   </div>`;
@@ -507,19 +612,19 @@ function escapeHtml(s){
 
 function lastNDays(n){
   const days = [];
+  const base = logicalNow();
   for(let i=n-1;i>=0;i--){
-    const d = new Date();
+    const d = new Date(base);
     d.setDate(d.getDate()-i);
-    const key = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-    days.push({ key, date: d });
+    days.push({ key: keyFromDate(d), date: d });
   }
   return days;
 }
 
 function dayStats(key){
   const log = state.logs[key] || [];
-  const cleared = log.filter(l=>l.project!=='Rotting').length;
-  const mins = log.reduce((s,l)=>s+(l.est||0),0);
+  const cleared = log.filter(l=>l.project!=='Rotting' && l.project!=='Sleep').length;
+  const mins = log.reduce((s,l)=>s+(l.actualMins!=null ? l.actualMins : (l.est||0)),0);
   const sleep = sleepHoursFor(key);
   const rot = state.rotting[key] || 0;
   const meals = state.meals[key] || [];
@@ -536,9 +641,11 @@ function renderHistory(){
   const days = lastNDays(7);
   const todayK = todayKey();
   const allStats = days.map(({key})=>dayStats(key));
+  const avgCleared = Math.round((allStats.reduce((s,d)=>s+d.cleared,0)/7)*10)/10;
+  const avgMins = Math.round(allStats.reduce((s,d)=>s+d.mins,0)/7);
   const avgSleep = Math.round((allStats.reduce((s,d)=>s+d.sleep,0)/7)*10)/10;
   const avgRot = Math.round(allStats.reduce((s,d)=>s+d.rot,0)/7);
-  const head = `<div class="weekhead"><span>Day</span><span>Cleared</span><span>Mins</span><span>Sleep</span><span>Avg slp</span><span>Rot</span><span>Avg rot</span><span>Meals</span></div>`;
+  const head = `<div class="weekhead"><span>Day</span><span>Sessions</span><span>Avg</span><span>Mins</span><span>Avg</span><span>Sleep</span><span>Avg</span><span>Rot</span><span>Avg</span></div>`;
   const rows = days.map(({key,date})=>{
     const s = dayStats(key);
     const label = key===todayK ? 'Today' : date.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
@@ -547,16 +654,59 @@ function renderHistory(){
     if(key===selectedDayKey) classes.push('selected');
     return `<div class="${classes.join(' ')}" onclick="selectDay('${key}')">
       <span class="wlabel">${label}</span>
-      <span>${s.cleared} quest${s.cleared===1?'':'s'}</span>
+      <span>${s.cleared}</span>
+      <span>${avgCleared}</span>
       <span><b>${s.mins}</b>m</span>
+      <span>${avgMins}m</span>
       <span><b>${s.sleep}</b>h</span>
-      <span><b>${avgSleep}</b>h</span>
+      <span>${avgSleep}h</span>
       <span><b>${s.rot}</b>m</span>
-      <span><b>${avgRot}</b>m</span>
-      <span>${s.meals.length}</span>
+      <span>${avgRot}m</span>
     </div>`;
   }).join('');
   el.innerHTML = head + rows;
+}
+
+function dayReportText(key, date){
+  const s = dayStats(key);
+  let out = date.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'}) + "\n";
+  out += "-".repeat(30) + "\n";
+  out += `Sessions logged: ${s.cleared} (${s.mins} min tracked)\n`;
+  out += `Sleep: ${s.sleep} hrs\n`;
+  out += `Rotting: ${s.rot} min\n`;
+  if(s.log.length){
+    out += "Timeline:\n";
+    [...s.log].sort((a,b)=>new Date(a.ts)-new Date(b.ts)).forEach(l=>{
+      const timeRange = l.start && l.end
+        ? `${new Date(l.start).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}–${new Date(l.end).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`
+        : new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+      const durationText = l.actualMins!=null ? ` (${l.actualMins}m)` : '';
+      out += `  ${timeRange}  [${l.project}] ${l.title}${durationText}\n`;
+    });
+  }
+  out += "\n";
+  return out;
+}
+
+function downloadText(filename, content){
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportSingleDay(key){
+  const date = new Date(key+'T00:00:00');
+  let out = "RBUILDS TRACKR — DAY ARCHIVE\n";
+  out += "Auto-saved on rollover (day fell outside the 7-day window)\n";
+  out += "=".repeat(50) + "\n\n";
+  out += dayReportText(key, date);
+  downloadText(`trackr-archive-${key}.txt`, out);
 }
 
 function exportLog(){
@@ -564,37 +714,8 @@ function exportLog(){
   let out = "RBUILDS TRACKR — WEEKLY LOG\n";
   out += "Generated " + new Date().toLocaleString() + "\n";
   out += "=".repeat(50) + "\n\n";
-  days.forEach(({key,date})=>{
-    const s = dayStats(key);
-    out += date.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'}) + "\n";
-    out += "-".repeat(30) + "\n";
-    out += `Quests cleared: ${s.cleared} (${s.mins} min logged)\n`;
-    out += `Sleep: ${s.sleep} hrs\n`;
-    out += `Rotting: ${s.rot} min\n`;
-    if(s.meals.length){
-      out += "Meals:\n";
-      s.meals.forEach(m => out += `  - ${m.meal}: ${m.level}\n`);
-    } else {
-      out += "Meals: none logged\n";
-    }
-    if(s.log.length){
-      out += "Timeline:\n";
-      [...s.log].sort((a,b)=>new Date(a.ts)-new Date(b.ts)).forEach(l=>{
-        out += `  ${new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}  [${l.project}] ${l.title}\n`;
-      });
-    }
-    out += "\n";
-  });
-
-  const blob = new Blob([out], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `trackr-log-${todayKey()}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  days.forEach(({key,date}) => { out += dayReportText(key, date); });
+  downloadText(`trackr-log-${todayKey()}.txt`, out);
 }
 
 function render(){
@@ -604,29 +725,24 @@ function render(){
   renderCategoryChips();
   renderHistory();
 
-  const cols = {queued:[], active:[], cleared:[]};
+  const cols = {todo:[], completed:[]};
   state.quests.forEach(q => cols[q.status].push(q));
 
-  ['queued','active','cleared'].forEach(status=>{
+  ['todo','completed'].forEach(status=>{
     const el = document.getElementById('col-'+status);
     document.getElementById('cnt-'+status).textContent = cols[status].length;
     el.innerHTML = cols[status].length ? cols[status].map(cardHTML).join('') : '<div class="empty">Nothing here.</div>';
   });
 
-  // Today's widgets (sleep / rot / meals) always reflect the actual current day
+  // Today's widgets (sleep / rot) always reflect the actual current day
   const todayK = todayKey();
   const sleepEntry = state.sleep[todayK];
   const sleepH = sleepHoursFor(todayK);
-  const rotM = state.rotting[todayK] || 0;
+  const rotBase = state.rotting[todayK] || 0;
 
   document.getElementById('sleepDisplay').innerHTML = sleepH + '<span class="unit">hrs</span>';
   document.getElementById('sleepRangeText').textContent = (sleepEntry && sleepEntry.bed && sleepEntry.wake) ? `${formatTime12(sleepEntry.bed)} → ${formatTime12(sleepEntry.wake)}` : '';
-  document.getElementById('rotDisplay').innerHTML = rotM + '<span class="unit">min</span>';
-
-  const todayMeals = state.meals[todayK] || [];
-  document.getElementById('mealLog').innerHTML = todayMeals.length ? todayMeals.map(m=>`
-    <div class="entry"><span>${escapeHtml(m.meal)}</span><span class="lvl">${escapeHtml(m.level)}</span></div>
-  `).join('') : '<div class="empty">No meals logged today.</div>';
+  document.getElementById('rotDisplay').innerHTML = rotBase + '<span class="unit">min</span>';
 
   // "Where ___ went" section reflects whichever day is selected in the week view
   if(!selectedDayKey) selectedDayKey = todayK;
@@ -635,36 +751,57 @@ function render(){
   document.getElementById('resetDayBtn').textContent = selectedDayKey === todayK ? "Reset today's log" : `Reset ${dayLabel}'s log`;
 
   const s = dayStats(selectedDayKey);
-  const mealEntries = s.meals.map(m => ({ title: `${m.meal}: ${m.level}`, project: 'Meal', ts: m.ts, est: 0 }));
-  const combinedLog = [...s.log, ...mealEntries];
 
   document.getElementById('statCleared').textContent = s.cleared;
   document.getElementById('statMins').textContent = s.mins;
   document.getElementById('statSleep').textContent = s.sleep;
   document.getElementById('statRot').textContent = s.rot;
 
+  // Timeline spans the logical day: 5am to 5am next day (1440 minutes total)
+  function minutesFromDayStart(d){
+    let m = d.getHours()*60 + d.getMinutes();
+    m -= 5*60;
+    if(m < 0) m += 24*60;
+    return m;
+  }
+
   const timeline = document.getElementById('timeline');
   timeline.innerHTML = '';
-  combinedLog.forEach(entry=>{
-    const d = new Date(entry.ts);
-    const mins = d.getHours()*60 + d.getMinutes();
-    const startMins = 6*60, endMins = 24*60;
-    const pct = Math.max(0, Math.min(100, ((mins-startMins)/(endMins-startMins))*100));
+
+  function addBlock(leftPct, widthPct, color, title){
     const tick = document.createElement('div');
     tick.className = 'tick';
-    tick.style.left = pct+'%';
-    tick.style.background = entry.project === 'Meal' ? '#c98a4a' : colorFor(entry.project);
-    tick.title = entry.title;
+    tick.style.left = leftPct+'%';
+    tick.style.width = Math.max(0.4, widthPct)+'%';
+    tick.style.background = color;
+    tick.title = title;
     timeline.appendChild(tick);
+  }
+
+  s.log.forEach(entry=>{
+    const startDate = entry.start ? new Date(entry.start) : new Date(entry.ts);
+    const endDate = entry.end ? new Date(entry.end) : startDate;
+    const startM = minutesFromDayStart(startDate);
+    const endM = minutesFromDayStart(endDate);
+    const color = colorFor(entry.project);
+    const title = entry.title + (entry.actualMins!=null ? ` (${entry.actualMins}m)` : '');
+
+    if(endM < startM){
+      // Interval wraps across the 5am seam (e.g. overnight sleep) — draw as two segments
+      addBlock((startM/1440)*100, ((1440-startM)/1440)*100, color, title);
+      addBlock(0, (endM/1440)*100, color, title);
+    } else {
+      addBlock((startM/1440)*100, ((endM-startM)/1440)*100, color, title);
+    }
   });
 
   const rows = document.getElementById('logrows');
-  if(combinedLog.length===0){
+  if(s.log.length===0){
     rows.innerHTML = '<div class="empty">Nothing logged for this day.</div>';
   } else {
-    rows.innerHTML = [...combinedLog].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).map(l => `
+    rows.innerHTML = [...s.log].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).map(l => `
       <div class="logrow">
-        <span class="lname">${escapeHtml(l.title)} <span style="color:${l.project === 'Meal' ? '#c98a4a' : colorFor(l.project)}">· ${escapeHtml(l.project)}</span></span>
+        <span class="lname">${escapeHtml(l.title)} <span style="color:${colorFor(l.project)}">· ${escapeHtml(l.project)}</span></span>
         <span class="ltime">${new Date(l.ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</span>
       </div>
     `).join('');
@@ -674,7 +811,16 @@ function render(){
 document.getElementById('newTitle').addEventListener('keydown', e => { if(e.key==='Enter') addQuest(); });
 document.getElementById('newCatName').addEventListener('keydown', e => { if(e.key==='Enter') addCategory(); });
 
-load();
+try{
+  load();
+}catch(e){
+  console.error('load() crashed, resetting to a clean state:', e);
+  state = { projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)), quests: [], logs: {}, sleep: {}, rotting: {}, meals: {}, archivedKeys: [], lastSeen: todayKey() };
+  selectedDayKey = todayKey();
+  save();
+  render();
+  startClock();
+}
 </script>
 </body>
 </html>
