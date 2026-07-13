@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>trackR</title>
+<title>rbuilds / trackR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* ---- Design tokens (rbuilds palette) ---- */
   :root{
     --bg:#0a0a0c;
     --panel:#141416;
@@ -19,6 +20,8 @@
     --green:#7fa88a;
     --red:#b06a54;
   }
+
+  /* ---- Reset + page shell ---- */
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);}
   #qb{
@@ -29,6 +32,7 @@
     padding:32px 24px 64px;
   }
   .wrap{max-width:960px;margin:0 auto;}
+  /* ---- Header (logo, title, live date/time) ---- */
   .header{
     display:flex;justify-content:space-between;align-items:flex-end;
     border-bottom:1px solid var(--border);
@@ -49,6 +53,7 @@
     margin:0 0 14px;color:var(--text);
   }
   .date{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-mute);text-align:right;}
+  /* ---- Form controls + buttons (shared across every widget) ---- */
   .addbar{
     display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;
   }
@@ -73,6 +78,7 @@
   button.primary{border-color:var(--gold-dim);color:var(--gold);}
   button.primary:hover{background:var(--gold);color:var(--bg);}
   button.small{padding:4px 8px;font-size:10px;}
+  /* ---- Quest board: To do / Completed columns + draggable cards ---- */
   .board{
     display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:36px;
   }
@@ -100,6 +106,7 @@
   .card-actions button{padding:4px 8px;font-size:10px;}
   .empty{color:var(--text-mute);font-size:12px;font-style:italic;}
 
+  /* ---- Section layout + stat bars (shared by every section below) ---- */
   section.block{
     border-top:1px solid var(--border);padding-top:22px;margin-bottom:32px;
   }
@@ -107,6 +114,7 @@
   .stats{display:flex;gap:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);flex-wrap:wrap;}
   .stats b{color:var(--gold);font-weight:500;}
 
+  /* ---- Category chips + the add-category form ---- */
   .categories{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
   .chip{
     display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);
@@ -117,10 +125,28 @@
   .chip button:hover{color:var(--red);}
   .catform{display:flex;gap:8px;flex-wrap:wrap;}
 
-  .timeline{position:relative;height:36px;background:var(--panel);border:1px solid var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden;}
-  .tick{position:absolute;top:0;bottom:0;min-width:5px;border-radius:1px;opacity:0.9;}
-  .tick:hover{opacity:1;}
-  .hourmarks{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-mute);margin-bottom:20px;}
+  /* ---- Dual analog clock visualization ("Where ___ went") ---- */
+  .clockrow{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+  .clockcard{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .clocklabel{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-mute);text-transform:uppercase;}
+  .clockrow svg{width:200px;height:200px;}
+  .clock-face{fill:var(--panel);stroke:var(--border);stroke-width:1;}
+  .clock-hole{fill:var(--bg);}
+  .clock-center-big{font-family:'DM Serif Display',serif;font-size:13px;fill:var(--text);}
+  .clock-center-small{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;fill:var(--text-mute);}
+  .clock-tick{stroke:var(--border-strong);stroke-width:1;}
+  .clock-hournum{font-family:'DM Mono',monospace;font-size:9px;fill:var(--text-mute);}
+  .clock-arc{cursor:pointer;opacity:0.92;transition:opacity 0.1s, filter 0.1s;}
+  .clock-arc:hover{opacity:1;filter:brightness(1.25);}
+  .clock-now{stroke:var(--gold);stroke-width:2;}
+  .block-tooltip{
+    position:fixed;pointer-events:none;background:var(--panel-2);border:1px solid var(--gold-dim);
+    border-radius:2px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);
+    z-index:1000;display:none;max-width:220px;box-shadow:0 6px 16px rgba(0,0,0,0.5);
+  }
+  .block-tooltip .tt-title{color:var(--gold);font-weight:500;margin-bottom:3px;font-family:'Outfit',sans-serif;font-size:12px;}
+  .block-tooltip .tt-time{color:var(--text-mute);}
+  /* ---- Plain-text log rows below the clocks ---- */
   .logrow{
     display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:12px;
     padding:6px 0;border-bottom:1px solid var(--border);color:var(--text-mute);
@@ -128,6 +154,7 @@
   .logrow .lname{color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;}
   .logrow .ltime{color:var(--gold);}
 
+  /* ---- Sleep + Rotting widget cards ---- */
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .widgetcard{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:16px;}
   .widgetcard .wtitle{
@@ -139,6 +166,7 @@
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
   .quickbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
 
+  /* ---- Weekly history table (clickable day rows + averages) ---- */
   .weekrow{
     display:grid;grid-template-columns:80px 55px 45px 55px 45px 50px 45px 50px 45px;gap:6px;align-items:center;
     font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);
@@ -154,6 +182,7 @@
     font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;
     color:var(--text-mute);padding-bottom:6px;border-bottom:1px solid var(--border-strong);
   }
+  /* ---- Responsive: narrow screens drop secondary columns ---- */
   @media(max-width:640px){.board{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} .weekrow,.weekhead{grid-template-columns:55px 1fr 1fr;font-size:9px;}
     .weekrow span:nth-child(3), .weekrow span:nth-child(5), .weekrow span:nth-child(6), .weekrow span:nth-child(7), .weekrow span:nth-child(8), .weekrow span:nth-child(9),
     .weekhead span:nth-child(3), .weekhead span:nth-child(5), .weekhead span:nth-child(6), .weekhead span:nth-child(7), .weekhead span:nth-child(8), .weekhead span:nth-child(9){display:none;}}
@@ -214,9 +243,9 @@
         <div class="bignum" id="sleepDisplay">0<span class="unit">hrs</span></div>
         <div id="sleepRangeText" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);margin-top:4px;"></div>
         <div class="row">
-          <input type="time" id="bedInput" style="width:120px;"/>
+          <input type="time" id="bedInput" style="width:120px;" oninput="autoAdvanceTime(event,'wakeInput')" onkeydown="handleTimeBackspace(event)"/>
           <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);">→</span>
-          <input type="time" id="wakeInput" style="width:120px;"/>
+          <input type="time" id="wakeInput" style="width:120px;" onkeydown="endFieldKeydown(event,'bedInput',logSleep)"/>
           <button onclick="logSleep()">Log sleep</button>
         </div>
       </div>
@@ -224,9 +253,9 @@
         <div class="wtitle">Time spent rotting</div>
         <div class="bignum" id="rotDisplay">0<span class="unit">min</span></div>
         <div class="row">
-          <input type="time" id="rotManualStart" style="width:120px;"/>
+          <input type="time" id="rotManualStart" style="width:120px;" oninput="autoAdvanceTime(event,'rotManualEnd')" onkeydown="handleTimeBackspace(event)"/>
           <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mute);">→</span>
-          <input type="time" id="rotManualEnd" style="width:120px;"/>
+          <input type="time" id="rotManualEnd" style="width:120px;" onkeydown="endFieldKeydown(event,'rotManualStart',logRotManual)"/>
           <button onclick="logRotManual()">Log rot</button>
         </div>
       </div>
@@ -252,8 +281,17 @@
         <span><b id="statRot">0</b>m rotted</span>
       </div>
     </div>
-    <div class="timeline" id="timeline"></div>
-    <div class="hourmarks"><span>5am</span><span>9am</span><span>1pm</span><span>5pm</span><span>9pm</span><span>1am</span><span>5am</span></div>
+    <div class="clockrow" id="clockRow">
+      <div class="clockcard">
+        <div class="clocklabel">12 AM – 12 PM</div>
+        <svg id="clockA" viewBox="0 0 220 220"></svg>
+      </div>
+      <div class="clockcard">
+        <div class="clocklabel">12 PM – 12 AM</div>
+        <svg id="clockB" viewBox="0 0 220 220"></svg>
+      </div>
+    </div>
+    <div id="blockTooltip" class="block-tooltip"></div>
     <div id="logrows"></div>
     <div style="margin-top:14px;">
       <button onclick="clearSelectedDay()" id="resetDayBtn">Reset this day's log</button>
@@ -264,6 +302,35 @@
 </div>
 
 <script>
+/*
+ * trackR — rbuilds daily quest/time tracker
+ * Single-file app: no build step, no dependencies. Persists to localStorage.
+ *
+ * Data model (see `state` below):
+ *   projects   – categories (name + color), e.g. OrbitArm, Sleep, Rotting
+ *   quests     – {id, title, project, status: 'todo'|'completed', totalMins, completedAt}
+ *   logs[day]  – array of logged sessions for that day: {title, project, actualMins, start, end, ts}
+ *   sleep[day] – {bed, wake, hours} for that day's sleep entry
+ *   rotting[day] – total rotting minutes logged that day
+ *
+ * The "day" a session belongs to is a *logical* day that rolls over at 5am,
+ * not midnight — see todayKey()/logicalNow() below. This means working past
+ * midnight still counts as "today" until 5am.
+ *
+ * Sections in this file:
+ *   1. Data model + persistence (state, load/save, normalizeState, rollover)
+ *   2. Categories (projects)
+ *   3. Quests (To do / Completed board)
+ *   4. Sleep + Rotting widgets
+ *   5. Clock visualization ("Where ___ went")
+ *   6. Weekly history + text export
+ *   7. Main render() + init
+ */
+
+// ---------------------------------------------------------------------------
+// 1. DATA MODEL + PERSISTENCE
+// ---------------------------------------------------------------------------
+
 const DEFAULT_PROJECTS = [
   {name:"OrbitArm", color:"#c9a961"},
   {name:"UAV Swap", color:"#7fa88a"},
@@ -276,6 +343,23 @@ const DEFAULT_PROJECTS = [
 
 function keyFromDate(d){
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+/**
+ * Parses a pair of "HH:MM" time-input values into real Date objects and the
+ * elapsed minutes between them. If the end time is at or before the start
+ * time, it's assumed to roll over into the next day (e.g. an 11pm–1am
+ * session) rather than being a negative/zero-length interval.
+ * Shared by quests, sleep, and rotting so the wrap-handling only lives once.
+ */
+function parseTimeRange(startVal, endVal){
+  const [sh,sm] = startVal.split(':').map(Number);
+  const [eh,em] = endVal.split(':').map(Number);
+  const startDate = new Date(); startDate.setHours(sh,sm,0,0);
+  const endDate = new Date(); endDate.setHours(eh,em,0,0);
+  if(endDate <= startDate) endDate.setDate(endDate.getDate()+1);
+  const mins = Math.round((endDate-startDate)/60000);
+  return { startDate, endDate, mins };
 }
 
 // The "day" rolls over at 5am, not midnight — so 2am counts as part of the previous day.
@@ -325,6 +409,41 @@ function normalizeState(){
   if(!state.projects.some(p=>p && p.name==='Rotting')) state.projects.push({name:'Rotting', color:'#5a5a5e'});
 }
 
+/**
+ * Runs whenever the calendar flips to a new logical day (5am boundary).
+ * - Sweeps completed quests off the live board (they're already in the logs).
+ * - Auto-archives the day that just fell outside the rolling 7-day window,
+ *   so nothing is lost once "This week" stops showing it.
+ * Returns true if a rollover actually happened.
+ */
+function performRollover(){
+  const key = todayKey();
+  if(!state.lastSeen || state.lastSeen === key) return false;
+
+  state.quests = state.quests.filter(q => q.status !== 'completed');
+
+  const fallingOffKey = keyMinusDays(key, 7);
+  const hasData = (state.logs[fallingOffKey] && state.logs[fallingOffKey].length)
+    || state.sleep[fallingOffKey] || state.rotting[fallingOffKey]
+    || (state.meals[fallingOffKey] && state.meals[fallingOffKey].length);
+  if(hasData && !state.archivedKeys.includes(fallingOffKey)){
+    exportSingleDay(fallingOffKey);
+    state.archivedKeys.push(fallingOffKey);
+  }
+
+  // If the day view was pinned to "today" or "yesterday", follow the rollover
+  // forward so the selection doesn't silently point at a stale day.
+  if(selectedDayKey === state.lastSeen || selectedDayKey === keyMinusDays(key,1)){
+    selectedDayKey = key;
+  }
+
+  state.lastSeen = key;
+  return true;
+}
+
+/** Loads saved state from localStorage (or migrates from the old key name),
+ *  repairs it, handles a day rollover if one occurred while the app was
+ *  closed, then does the initial render and starts the clock. */
 function load(){
   try{
     let raw = localStorage.getItem('trackr-data');
@@ -338,56 +457,24 @@ function load(){
   }catch(e){console.error('load failed', e);}
 
   normalizeState();
-
-  const key = todayKey();
-  if(state.lastSeen && state.lastSeen !== key){
-    // Day rolled over (crosses the 5am boundary) — clear finished quests off the live board
-    state.quests = state.quests.filter(q => q.status !== 'completed');
-
-    // The day now falling outside the rolling 7-day window gets archived to a text file
-    // so nothing is lost once it scrolls off "This week".
-    const fallingOffKey = keyMinusDays(key, 7);
-    const hasData = (state.logs[fallingOffKey] && state.logs[fallingOffKey].length)
-      || state.sleep[fallingOffKey] || state.rotting[fallingOffKey]
-      || (state.meals[fallingOffKey] && state.meals[fallingOffKey].length);
-    if(hasData && !state.archivedKeys.includes(fallingOffKey)){
-      exportSingleDay(fallingOffKey);
-      state.archivedKeys.push(fallingOffKey);
-    }
-  }
-  state.lastSeen = key;
-  selectedDayKey = key;
+  performRollover();
+  state.lastSeen = todayKey();
+  selectedDayKey = state.lastSeen;
   save();
 
   render();
   startClock();
 }
 
+/** Ticks the header clock every second and checks for a day rollover while
+ *  the app is left open across the 5am boundary. */
 function startClock(){
   const tick = () => {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-    checkRollover();
+    if(performRollover()){ save(); render(); }
   };
   tick();
   setInterval(tick, 1000);
-}
-
-function checkRollover(){
-  const key = todayKey();
-  if(state.lastSeen && state.lastSeen !== key){
-    state.quests = state.quests.filter(q => q.status !== 'completed');
-    const fallingOffKey = keyMinusDays(key, 7);
-    const hasData = (state.logs[fallingOffKey] && state.logs[fallingOffKey].length)
-      || state.sleep[fallingOffKey] || state.rotting[fallingOffKey]
-      || (state.meals[fallingOffKey] && state.meals[fallingOffKey].length);
-    if(hasData && !state.archivedKeys.includes(fallingOffKey)){
-      exportSingleDay(fallingOffKey);
-      state.archivedKeys.push(fallingOffKey);
-    }
-    state.lastSeen = key;
-    if(selectedDayKey === state.lastSeen || selectedDayKey === keyMinusDays(key,1)) selectedDayKey = key;
-    save(); render();
-  }
 }
 
 function save(){
@@ -409,6 +496,10 @@ function populateProjectSelect(){
   if(current) sel.value = current;
 }
 
+// ---------------------------------------------------------------------------
+// 2. CATEGORIES (PROJECTS)
+// ---------------------------------------------------------------------------
+
 function renderCategoryChips(){
   const el = document.getElementById('categoryChips');
   el.innerHTML = state.projects.map(p => `
@@ -419,6 +510,7 @@ function renderCategoryChips(){
   `).join('');
 }
 
+/** Adds a new category chip (project) with a name + color, ignoring duplicates. */
 function addCategory(){
   const nameEl = document.getElementById('newCatName');
   const colorEl = document.getElementById('newCatColor');
@@ -430,11 +522,18 @@ function addCategory(){
   save(); render();
 }
 
+/** Removes a category. Existing quests/logs that reference it keep working —
+ *  colorFor() falls back to the default gold if the project no longer exists. */
 function removeCategory(name){
   state.projects = state.projects.filter(p=>p.name!==name);
   save(); render();
 }
 
+// ---------------------------------------------------------------------------
+// 3. QUESTS (TO DO / COMPLETED BOARD)
+// ---------------------------------------------------------------------------
+
+/** Adds a new quest in the "To do" column with no time logged yet. */
 function addQuest(){
   const title = document.getElementById('newTitle').value.trim();
   if(!title) return;
@@ -460,12 +559,7 @@ function logQuestTime(id){
   const startVal = document.getElementById('qstart-'+id).value;
   const endVal = document.getElementById('qend-'+id).value;
   if(!startVal || !endVal) return;
-  const [sh,sm] = startVal.split(':').map(Number);
-  const [eh,em] = endVal.split(':').map(Number);
-  const startDate = new Date(); startDate.setHours(sh,sm,0,0);
-  const endDate = new Date(); endDate.setHours(eh,em,0,0);
-  if(endDate <= startDate) endDate.setDate(endDate.getDate()+1);
-  const mins = Math.round((endDate-startDate)/60000);
+  const { startDate, endDate, mins } = parseTimeRange(startVal, endVal);
 
   const key = todayKey();
   if(!state.logs[key]) state.logs[key] = [];
@@ -475,15 +569,20 @@ function logQuestTime(id){
   save(); render();
 }
 
-// Drag and drop between To do / Completed
+// Drag and drop between To do / Completed. draggedQuestId is a fallback for
+// browsers/situations where the dataTransfer payload doesn't survive the drop.
 let draggedQuestId = null;
 
+/** Fired on a quest card's dragstart — remembers which quest is being moved. */
 function onDragStart(e, id){
   draggedQuestId = id;
   e.dataTransfer.setData('text/plain', id);
   e.dataTransfer.effectAllowed = 'move';
 }
 
+/** Fired when a card is dropped on the "To do" or "Completed" column.
+ *  Just updates status — it does NOT log any time, since logging happens
+ *  explicitly via the Log button/Enter key on the card itself. */
 function onDrop(e, targetStatus){
   e.preventDefault();
   document.querySelectorAll('.col').forEach(c => c.classList.remove('dragover'));
@@ -501,26 +600,34 @@ function removeQuest(id){
   save(); render();
 }
 
+/** Wipes the logged sessions for whichever day is currently selected in
+ *  "This week" (defaults to today). Sleep/rotting totals for that day are
+ *  untouched — this only clears the logs[] timeline entries. */
 function clearSelectedDay(){
   state.logs[selectedDayKey] = [];
   save(); render();
 }
 
+// ---------------------------------------------------------------------------
+// 4. SLEEP + ROTTING WIDGETS
+// ---------------------------------------------------------------------------
+
+// Sleep is tracked as bed→wake hours rather than raw minutes, since that's
+// the more natural unit to read at a glance.
 function computeSleepHours(bed, wake){
-  const [bh, bm] = bed.split(':').map(Number);
-  const [wh, wm] = wake.split(':').map(Number);
-  let bedMinutes = bh*60+bm;
-  let wakeMinutes = wh*60+wm;
-  if(wakeMinutes <= bedMinutes) wakeMinutes += 24*60;
-  return Math.round(((wakeMinutes-bedMinutes)/60)*100)/100;
+  const { mins } = parseTimeRange(bed, wake);
+  return Math.round((mins/60)*100)/100;
 }
 
+/** Reads a day's sleep hours, tolerating the old schema where sleep[key]
+ *  was stored as a bare number instead of {bed, wake, hours}. */
 function sleepHoursFor(key){
   const s = state.sleep[key];
   if(s == null) return 0;
   return typeof s === 'number' ? s : (s.hours || 0);
 }
 
+/** Formats a 24-hour "HH:MM" string as a 12-hour clock string, e.g. "23:05" → "11:05 PM". */
 function formatTime12(hhmm){
   const [h,m] = hhmm.split(':').map(Number);
   const period = h>=12 ? 'PM':'AM';
@@ -536,18 +643,18 @@ function logSleep(){
   const key = todayKey();
   state.sleep[key] = { bed, wake, hours };
 
-  // Also log it as a timeline entry, just like a quest
+  // Also log it as a timeline entry, just like a quest. Only one sleep
+  // entry makes sense per day, so replace any existing one for today.
   if(!state.logs[key]) state.logs[key] = [];
   state.logs[key] = state.logs[key].filter(l => l.project !== 'Sleep');
-  const [bh,bm] = bed.split(':').map(Number);
-  const [wh,wm] = wake.split(':').map(Number);
-  const bedDate = new Date(); bedDate.setHours(bh,bm,0,0);
-  const wakeDate = new Date(); wakeDate.setHours(wh,wm,0,0);
+  const { startDate: bedDate, endDate: wakeDate } = parseTimeRange(bed, wake);
   state.logs[key].push({
     title: `Slept ${hours}h`, project:'Sleep', actualMins: Math.round(hours*60),
     start: bedDate.toISOString(), end: wakeDate.toISOString(), ts: wakeDate.toISOString()
   });
 
+  document.getElementById('bedInput').value = '';
+  document.getElementById('wakeInput').value = '';
   save(); render();
 }
 
@@ -557,12 +664,7 @@ function logRotManual(){
   const endVal = document.getElementById('rotManualEnd').value;
   if(!startVal || !endVal) return;
   const key = todayKey();
-  const [sh,sm] = startVal.split(':').map(Number);
-  const [eh,em] = endVal.split(':').map(Number);
-  const startDate = new Date(); startDate.setHours(sh,sm,0,0);
-  const endDate = new Date(); endDate.setHours(eh,em,0,0);
-  if(endDate <= startDate) endDate.setDate(endDate.getDate()+1);
-  const mins = Math.round((endDate-startDate)/60000);
+  const { startDate, endDate, mins } = parseTimeRange(startVal, endVal);
   state.rotting[key] = (state.rotting[key]||0) + mins;
   if(!state.logs[key]) state.logs[key] = [];
   state.logs[key].push({ title:`Rotted ${mins}m`, project:'Rotting', actualMins:mins, start:startDate.toISOString(), end:endDate.toISOString(), ts: endDate.toISOString() });
@@ -571,6 +673,10 @@ function logRotManual(){
   save(); render();
 }
 
+/** Renders one quest card. "To do" cards get their own start/end time
+ *  fields + Log button (logging does NOT change status — see logQuestTime).
+ *  "Completed" cards are read-only except for Remove. Both are draggable
+ *  between the two board columns. */
 function cardHTML(q){
   const color = colorFor(q.project);
   if(q.status === 'todo'){
@@ -582,9 +688,9 @@ function cardHTML(q){
         <span class="tag" style="color:${color}">${escapeHtml(q.project)}${q.totalMins ? ' · '+q.totalMins+'m logged' : ''}</span>
       </div>
       <div class="row" style="margin-top:8px;gap:6px;">
-        <input type="time" id="qstart-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;"/>
+        <input type="time" id="qstart-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;" oninput="autoAdvanceTime(event,'qend-${q.id}')" onkeydown="handleTimeBackspace(event)"/>
         <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-mute);">→</span>
-        <input type="time" id="qend-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;"/>
+        <input type="time" id="qend-${q.id}" style="width:100px;padding:6px 8px;font-size:12px;" onkeydown="endFieldKeydown(event,'qstart-${q.id}', function(){ logQuestTime('${q.id}'); })"/>
       </div>
       <div class="card-actions">
         <button onclick="logQuestTime('${q.id}')">Log</button>
@@ -606,10 +712,221 @@ function cardHTML(q){
   </div>`;
 }
 
+// ---------------------------------------------------------------------------
+// 5. CLOCK VISUALIZATION ("Where ___ went")
+// ---------------------------------------------------------------------------
+// Two standard 12-hour analog faces (12am–12pm, 12pm–12am). Every logged
+// session (quest, sleep, rotting) draws as a colored ring segment; segments
+// that cross midnight (like an overnight sleep) are split into two pieces,
+// one per clock. All angles are in degrees, 0 = 12 o'clock, clockwise.
+
+const CLOCK_CX = 110, CLOCK_CY = 110, CLOCK_R_OUTER = 85, CLOCK_R_INNER = 55;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Converts a clock angle (0 = top/12, clockwise) to an (x,y) point on a
+ *  circle of radius r centered at (cx,cy). */
+function polarToXY(cx, cy, r, angleDeg){
+  const rad = (angleDeg - 90) * Math.PI/180;
+  return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+}
+
+// Donut-segment arc path between two angles (degrees, 0 = top, clockwise)
+function arcPath(cx, cy, rOuter, rInner, startDeg, endDeg){
+  let a1 = startDeg, a2 = endDeg;
+  if(a2 <= a1) a2 = a1 + 0.6; // minimum sliver so very short logs are still visible/hoverable
+  const large = (a2-a1) > 180 ? 1 : 0;
+  const p1 = polarToXY(cx,cy,rOuter,a1);
+  const p2 = polarToXY(cx,cy,rOuter,a2);
+  const p3 = polarToXY(cx,cy,rInner,a2);
+  const p4 = polarToXY(cx,cy,rInner,a1);
+  return `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 ${large} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 ${large} 0 ${p4.x} ${p4.y} Z`;
+}
+
+/** Draws one empty clock face (rim, hour ticks + numbers, center hole with
+ *  optional center labels) into the given <svg> element. Arc segments for
+ *  logged sessions are added separately by renderClocks(). */
+function buildClockFace(svgEl, hourLabels, centerBig, centerSmall){
+  svgEl.innerHTML = '';
+  const face = document.createElementNS(SVG_NS,'circle');
+  face.setAttribute('cx',CLOCK_CX); face.setAttribute('cy',CLOCK_CY); face.setAttribute('r', CLOCK_R_OUTER+6);
+  face.setAttribute('class','clock-face');
+  svgEl.appendChild(face);
+
+  hourLabels.forEach((hourLabel, i)=>{
+    const angle = (i/12)*360;
+    const tickInner = polarToXY(CLOCK_CX,CLOCK_CY,CLOCK_R_OUTER+2,angle);
+    const tickOuter = polarToXY(CLOCK_CX,CLOCK_CY,CLOCK_R_OUTER+6,angle);
+    const line = document.createElementNS(SVG_NS,'line');
+    line.setAttribute('x1',tickInner.x); line.setAttribute('y1',tickInner.y);
+    line.setAttribute('x2',tickOuter.x); line.setAttribute('y2',tickOuter.y);
+    line.setAttribute('class','clock-tick');
+    svgEl.appendChild(line);
+
+    const labelPos = polarToXY(CLOCK_CX,CLOCK_CY,CLOCK_R_OUTER+16,angle);
+    const text = document.createElementNS(SVG_NS,'text');
+    text.setAttribute('x', labelPos.x); text.setAttribute('y', labelPos.y+3);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('class','clock-hournum');
+    text.textContent = hourLabel;
+    svgEl.appendChild(text);
+  });
+
+  const hole = document.createElementNS(SVG_NS,'circle');
+  hole.setAttribute('cx',CLOCK_CX); hole.setAttribute('cy',CLOCK_CY); hole.setAttribute('r', CLOCK_R_INNER-2);
+  hole.setAttribute('class','clock-hole');
+  svgEl.appendChild(hole);
+
+  if(centerBig){
+    const big = document.createElementNS(SVG_NS,'text');
+    big.setAttribute('x', CLOCK_CX); big.setAttribute('y', CLOCK_CY-2);
+    big.setAttribute('text-anchor','middle');
+    big.setAttribute('class','clock-center-big');
+    big.textContent = centerBig;
+    svgEl.appendChild(big);
+  }
+  if(centerSmall){
+    const small = document.createElementNS(SVG_NS,'text');
+    small.setAttribute('x', CLOCK_CX); small.setAttribute('y', CLOCK_CY+14);
+    small.setAttribute('text-anchor','middle');
+    small.setAttribute('class','clock-center-small');
+    small.textContent = centerSmall;
+    svgEl.appendChild(small);
+  }
+}
+
+/** Shows the hover tooltip for a clock arc segment, positioned near the
+ *  cursor (clamped so it doesn't run off the viewport edge). */
+function showTooltip(e, entry){
+  const tip = document.getElementById('blockTooltip');
+  const startStr = entry.start ? new Date(entry.start).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
+  const endStr = entry.end ? new Date(entry.end).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}) : '';
+  const durationStr = entry.actualMins!=null ? ` (${entry.actualMins}m)` : '';
+  tip.innerHTML = `<div class="tt-title">${escapeHtml(entry.title)}</div><div class="tt-time">${escapeHtml(entry.project)} · ${startStr} – ${endStr}${durationStr}</div>`;
+  tip.style.display = 'block';
+  const x = e.clientX, y = e.clientY;
+  const tipWidth = 230, tipHeight = 50;
+  tip.style.left = Math.min(x+14, window.innerWidth - tipWidth) + 'px';
+  tip.style.top = Math.min(y+14, window.innerHeight - tipHeight) + 'px';
+}
+
+function hideTooltip(){
+  document.getElementById('blockTooltip').style.display = 'none';
+}
+
+// Draws two standard 12-hour analog clock faces (12am–12pm and 12pm–12am),
+// numbered 12 at top like a normal clock, with an arc segment
+// for every logged interval, split at the halfway seam and at midnight-wrap
+// as needed. Hovering a segment shows name/start/end via showTooltip.
+function renderClocks(log, isToday){
+  const svgA = document.getElementById('clockA');
+  const svgB = document.getElementById('clockB');
+  const hourLabels = [12,1,2,3,4,5,6,7,8,9,10,11];
+  buildClockFace(svgA, hourLabels, 'Morning', 'AM');
+  buildClockFace(svgB, hourLabels, 'Evening', 'PM');
+
+  function minutesFromDayStart(d){
+    return d.getHours()*60 + d.getMinutes();
+  }
+
+  function daySegments(startM, endM){
+    if(endM < startM) return [{start:startM, end:1440}, {start:0, end:endM}];
+    return [{start:startM, end:endM}];
+  }
+
+  log.forEach(entry=>{
+    const startDate = entry.start ? new Date(entry.start) : new Date(entry.ts);
+    const endDate = entry.end ? new Date(entry.end) : startDate;
+    const startM = minutesFromDayStart(startDate);
+    const endM = minutesFromDayStart(endDate);
+    const color = colorFor(entry.project);
+
+    daySegments(startM, endM).forEach(seg=>{
+      const pieces = [];
+      if(seg.start < 720) pieces.push({ half:0, start: seg.start, end: Math.min(seg.end,720) });
+      if(seg.end > 720) pieces.push({ half:1, start: Math.max(seg.start,720), end: seg.end });
+
+      pieces.forEach(p=>{
+        if(p.end <= p.start) return;
+        const halfOffset = p.half===0 ? 0 : 720;
+        const angleStart = ((p.start-halfOffset)/720)*360;
+        const angleEnd = ((p.end-halfOffset)/720)*360;
+        const svg = p.half===0 ? svgA : svgB;
+        const path = document.createElementNS(SVG_NS,'path');
+        path.setAttribute('d', arcPath(CLOCK_CX,CLOCK_CY,CLOCK_R_OUTER,CLOCK_R_INNER,angleStart,angleEnd));
+        path.setAttribute('fill', color);
+        path.setAttribute('class','clock-arc');
+        path.addEventListener('mousemove', e=>showTooltip(e, entry));
+        path.addEventListener('mouseenter', e=>showTooltip(e, entry));
+        path.addEventListener('mouseleave', hideTooltip);
+        svg.appendChild(path);
+      });
+    });
+  });
+
+  if(isToday){
+    const nowM = minutesFromDayStart(new Date());
+    const half = nowM < 720 ? 0 : 1;
+    const halfOffset = half===0 ? 0 : 720;
+    const angle = ((nowM-halfOffset)/720)*360;
+    const svg = half===0 ? svgA : svgB;
+    const p1 = polarToXY(CLOCK_CX,CLOCK_CY,CLOCK_R_INNER-4,angle);
+    const p2 = polarToXY(CLOCK_CX,CLOCK_CY,CLOCK_R_OUTER+6,angle);
+    const line = document.createElementNS(SVG_NS,'line');
+    line.setAttribute('x1',p1.x); line.setAttribute('y1',p1.y);
+    line.setAttribute('x2',p2.x); line.setAttribute('y2',p2.y);
+    line.setAttribute('class','clock-now');
+    svg.appendChild(line);
+  }
+}
+
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ---------------------------------------------------------------------------
+// Shared time-input UX helpers (used by quest cards, sleep, and rotting)
+// ---------------------------------------------------------------------------
+
+// Moves focus to the next field once a time input is fully typed (HH:MM).
+function autoAdvanceTime(e, nextId){
+  if(e.target.value && e.target.value.length === 5){
+    const next = document.getElementById(nextId);
+    if(next) next.focus();
+  }
+}
+
+// Backspace clears the whole time value in one press (instead of fiddling with
+// one segment at a time) — and if the field is already empty, backspace jumps
+// back to the previous field, so the start/end pair feels like one line you're
+// typing and can backspace straight through.
+function handleTimeBackspace(e, prevId){
+  if(e.key !== 'Backspace') return;
+  if(e.target.value){
+    e.preventDefault();
+    e.target.value = '';
+  } else if(prevId){
+    const prev = document.getElementById(prevId);
+    if(prev){ e.preventDefault(); prev.focus(); }
+  }
+}
+
+// Combined handler for the "end" field of a start/end pair: Enter logs the
+// time (if filled), Backspace clears it (or hops back to the start field
+// once already empty).
+function endFieldKeydown(e, prevId, fn){
+  if(e.key === 'Enter' && e.target.value){
+    e.preventDefault();
+    fn();
+    return;
+  }
+  handleTimeBackspace(e, prevId);
+}
+
+// ---------------------------------------------------------------------------
+// 6. WEEKLY HISTORY + TEXT EXPORT
+// ---------------------------------------------------------------------------
+
+/** Returns the last n logical days (today + n-1 before it) as {key, date} pairs. */
 function lastNDays(n){
   const days = [];
   const base = logicalNow();
@@ -621,6 +938,9 @@ function lastNDays(n){
   return days;
 }
 
+/** Aggregates everything logged for a single day: session count/minutes,
+ *  sleep hours, rotting minutes, and the raw log array (used by both the
+ *  clock visualization and the weekly table). */
 function dayStats(key){
   const log = state.logs[key] || [];
   const cleared = log.filter(l=>l.project!=='Rotting' && l.project!=='Sleep').length;
@@ -631,11 +951,15 @@ function dayStats(key){
   return { cleared, mins, sleep, rot, meals, log };
 }
 
+/** Switches which day "Where ___ went" is showing — called by clicking a
+ *  row in the weekly table. */
 function selectDay(key){
   selectedDayKey = key;
   render();
 }
 
+/** Renders the 7-day "This week" table, including the 7-day averages shown
+ *  alongside each day's actual numbers. Clicking a row calls selectDay(). */
 function renderHistory(){
   const el = document.getElementById('weekHistory');
   const days = lastNDays(7);
@@ -667,6 +991,8 @@ function renderHistory(){
   el.innerHTML = head + rows;
 }
 
+/** Builds the human-readable plain-text report for one day, used by both
+ *  the manual "Export log" button and the automatic rollover archive. */
 function dayReportText(key, date){
   const s = dayStats(key);
   let out = date.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'}) + "\n";
@@ -688,6 +1014,7 @@ function dayReportText(key, date){
   return out;
 }
 
+/** Triggers a browser download of a plain-text file with the given content. */
 function downloadText(filename, content){
   const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -700,6 +1027,9 @@ function downloadText(filename, content){
   URL.revokeObjectURL(url);
 }
 
+/** Auto-archives a single day's report when it falls outside the rolling
+ *  7-day window (called from performRollover), so its data survives even
+ *  though "This week" stops showing it. */
 function exportSingleDay(key){
   const date = new Date(key+'T00:00:00');
   let out = "RBUILDS TRACKR — DAY ARCHIVE\n";
@@ -709,6 +1039,8 @@ function exportSingleDay(key){
   downloadText(`trackr-archive-${key}.txt`, out);
 }
 
+/** Manually exports the full current 7-day window as one text file
+ *  (the "Export log (.txt)" button). */
 function exportLog(){
   const days = lastNDays(7);
   let out = "RBUILDS TRACKR — WEEKLY LOG\n";
@@ -718,6 +1050,13 @@ function exportLog(){
   downloadText(`trackr-log-${todayKey()}.txt`, out);
 }
 
+// ---------------------------------------------------------------------------
+// 7. MAIN RENDER + INIT
+// ---------------------------------------------------------------------------
+
+/** Re-renders the entire UI from `state`. Called after every mutation
+ *  (add/remove/log/drag/etc) rather than patching the DOM incrementally —
+ *  simple to reason about, and cheap enough at this scale. */
 function render(){
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
 
@@ -757,43 +1096,8 @@ function render(){
   document.getElementById('statSleep').textContent = s.sleep;
   document.getElementById('statRot').textContent = s.rot;
 
-  // Timeline spans the logical day: 5am to 5am next day (1440 minutes total)
-  function minutesFromDayStart(d){
-    let m = d.getHours()*60 + d.getMinutes();
-    m -= 5*60;
-    if(m < 0) m += 24*60;
-    return m;
-  }
-
-  const timeline = document.getElementById('timeline');
-  timeline.innerHTML = '';
-
-  function addBlock(leftPct, widthPct, color, title){
-    const tick = document.createElement('div');
-    tick.className = 'tick';
-    tick.style.left = leftPct+'%';
-    tick.style.width = Math.max(0.4, widthPct)+'%';
-    tick.style.background = color;
-    tick.title = title;
-    timeline.appendChild(tick);
-  }
-
-  s.log.forEach(entry=>{
-    const startDate = entry.start ? new Date(entry.start) : new Date(entry.ts);
-    const endDate = entry.end ? new Date(entry.end) : startDate;
-    const startM = minutesFromDayStart(startDate);
-    const endM = minutesFromDayStart(endDate);
-    const color = colorFor(entry.project);
-    const title = entry.title + (entry.actualMins!=null ? ` (${entry.actualMins}m)` : '');
-
-    if(endM < startM){
-      // Interval wraps across the 5am seam (e.g. overnight sleep) — draw as two segments
-      addBlock((startM/1440)*100, ((1440-startM)/1440)*100, color, title);
-      addBlock(0, (endM/1440)*100, color, title);
-    } else {
-      addBlock((startM/1440)*100, ((endM-startM)/1440)*100, color, title);
-    }
-  });
+  // Render the dual clock-face visualization for the selected day
+  renderClocks(s.log, selectedDayKey === todayK);
 
   const rows = document.getElementById('logrows');
   if(s.log.length===0){
@@ -808,9 +1112,13 @@ function render(){
   }
 }
 
+// Enter-to-submit for the two plain text inputs (quest title, new category name)
 document.getElementById('newTitle').addEventListener('keydown', e => { if(e.key==='Enter') addQuest(); });
 document.getElementById('newCatName').addEventListener('keydown', e => { if(e.key==='Enter') addCategory(); });
 
+// Boot the app. If anything throws during load (e.g. unexpectedly malformed
+// localStorage data that normalizeState() couldn't fully repair), fall back
+// to a clean empty state rather than leaving a blank/broken page.
 try{
   load();
 }catch(e){
